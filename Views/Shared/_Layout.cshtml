@@ -28,6 +28,16 @@
                             <li class="nav-item">
                                 <a class="nav-link text-dark" asp-controller="Admin" asp-action="Dashboard">Admin Dashboard</a>
                             </li>
+                            <li class="nav-item">
+                                <a class="nav-link text-dark" asp-controller="Students" asp-action="Index" asp-route-search="" asp-area="">Manage Students</a>
+                            </li>
+                        }
+                        @if (User.IsInRole("Student"))
+                        {
+                            <li class="nav-item">
+                                <a class="nav-link text-dark" asp-controller="Student" asp-action="Profile">My Profile</a>
+                            </li>
+
                         }
                     </ul>
                     <ul class="navbar-nav">

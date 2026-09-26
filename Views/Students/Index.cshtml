@@ -1,0 +1,45 @@
+﻿@model List<Hostel_hub.Models.Student>
+
+<h2>Manage Students</h2>
+
+<form method="get" class="row g-2 mb-3">
+    <div class="col-auto">
+        <input type="text" name="search" value="@Context.Request.Query["search"]" class="form-control" placeholder="Search by name or roll number" />
+    </div>
+    <div class="col-auto">
+        <button type="submit" class="btn btn-secondary">Search</button>
+    </div>
+</form>
+
+@if (!Model.Any())
+{
+    <p>No students found.</p>
+}
+else
+{
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Full Name</th>
+                <th>Roll Number</th>
+                <th>Hostel</th>
+                <th>Room</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var student in Model)
+            {
+                <tr>
+                    <td>@student.FullName</td>
+                    <td>@student.RollNumber</td>
+                    <td>@(student.Hostel?.Name ?? "Not assigned")</td>
+                    <td>@(student.Room?.RoomNumber ?? "Not assigned")</td>
+                    <td>
+                        <a asp-action="Details" asp-route-id="@student.StudentId" class="btn btn-sm btn-primary">View</a>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}

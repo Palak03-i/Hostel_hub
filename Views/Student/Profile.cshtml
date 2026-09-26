@@ -1,0 +1,22 @@
+﻿@model Hostel_hub.ViewModels.StudentProfileViewModel
+
+<h2>My Profile</h2>
+
+<dl class="row">
+    <dt class="col-sm-3">Full Name</dt>
+    <dd class="col-sm-9">@Model.FullName</dd>
+
+    <dt class="col-sm-3">Roll Number</dt>
+    <dd class="col-sm-9">@Model.RollNumber</dd>
+
+    <dt class="col-sm-3">Phone Number</dt>
+    <dd class="col-sm-9">@(Model.PhoneNumber ?? "Not provided")</dd>
+
+    <dt class="col-sm-3">Hostel</dt>
+    <dd class="col-sm-9">@(Model.HostelName ?? "Not yet assigned")</dd>
+
+    <dt class="col-sm-3">Room</dt>
+    <dd class="col-sm-9">@(Model.RoomNumber ?? "Not yet assigned")</dd>
+</dl>
+
+<a asp-action="EditProfile" class="btn btn-primary">Edit Profile</a>
