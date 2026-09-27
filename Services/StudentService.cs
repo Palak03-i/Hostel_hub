@@ -64,6 +64,13 @@ namespace Hostel_hub.Services
                 .Include(s => s.Room)
                 .FirstOrDefaultAsync(s => s.StudentId == studentId);
         }
+        public async Task<List<Student>> GetUnallocatedStudentsAsync()
+        {
+            return await _context.Students
+                .Where(s => s.RoomId == null)
+                .OrderBy(s => s.FullName)
+                .ToListAsync();
+        }
 
     }
 }

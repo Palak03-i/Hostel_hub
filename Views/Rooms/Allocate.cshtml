@@ -1,0 +1,29 @@
+﻿@{
+    var room = (Hostel_hub.Models.Room)ViewBag.Room;
+    var students = (List<Hostel_hub.Models.Student>)ViewBag.UnallocatedStudents;
+}
+
+<h2>Allocate Student to Room @room.RoomNumber</h2>
+<p>@room.CurrentOccupancy / @room.Capacity occupied</p>
+
+@if (!students.Any())
+{
+    <p>No unallocated students available.</p>
+}
+else
+{
+    <form asp-action="Allocate" asp-route-roomId="@room.RoomId" method="post">
+        <div class="form-group mb-3">
+            <label>Select Student</label>
+            <select name="studentId" class="form-control">
+                @foreach (var student in students)
+                {
+                    <option value="@student.StudentId">@student.FullName (@student.RollNumber)</option>
+                }
+            </select>
+        </div>
+        <button type="submit" class="btn btn-primary">Allocate</button>
+    </form>
+}
+
+<a asp-action="Details" asp-route-id="@room.RoomId" class="btn btn-secondary">Back</a>

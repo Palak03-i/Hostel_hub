@@ -117,5 +117,47 @@ namespace Hostel_hub.Services
             await _context.SaveChangesAsync();
             return (true, null);
         }
+        public async Task<(bool Success, string? ErrorMessage)> AllocateStudentAsync(int studentId, int roomId)
+        {
+            using var transaction = await _context.Database.BeginTransactionAsync();
+
+            try
+            {
+                var student = await _context.Students.FirstOrDefaultAsync(s => s.StudentId == studentId);
+                if (student == null)
+                {
+                    return (false, "Student not found.");
+                }
+
+                if (student.RoomId.HasValue)
+                {
+                    return (false, "This student is already allocated to a room. Use Room Change instead.");
+                }
+
+                var room = await _context.Rooms.FirstOrDefaultAsync(r => r.RoomId == roomId);
+                if (room == null)
+                {
+                    return (false, "Room not found.");
+                }
+
+                if (room.CurrentOccupancy >= room.Capacity)
+                {
+                    return (false, $"Room '{room.RoomNumber}' is full ({room.CurrentOccupancy}/{room.Capacity}).");
+                }
+
+                room.CurrentOccupancy += 1;
+                student.RoomId = room.RoomId;
+                student.HostelId = room.HostelId;
+
+                await _context.SaveChangesAsync();
+                await transaction.CommitAsync();
+                return (true, null);
+            }
+            catch (DbUpdateConcurrencyException)
+            {
+                await transaction.RollbackAsync();
+                return (false, "This room was just modified by someone else. Please refresh and try again.");
+            }
+        }
     }
 }

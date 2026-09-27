@@ -9,5 +9,6 @@ namespace Hostel_hub.Services
         Task<(bool Success, string? ErrorMessage)> CreateRoomAsync(int hostelId, string roomNumber, int capacity);
         Task<(bool Success, string? ErrorMessage)> UpdateRoomAsync(int roomId, string roomNumber, int capacity);
         Task<(bool Success, string? ErrorMessage)> DeleteRoomAsync(int roomId);
+        Task<(bool Success, string? ErrorMessage)> AllocateStudentAsync(int studentId, int roomId);
     }
 }

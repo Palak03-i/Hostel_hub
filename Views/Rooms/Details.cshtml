@@ -2,6 +2,11 @@
 
 <h2>Room Details</h2>
 
+@if (TempData["ErrorMessage"] != null)
+{
+    <div class="alert alert-danger">@TempData["ErrorMessage"]</div>
+}
+
 <dl class="row">
     <dt class="col-sm-3">Hostel</dt>
     <dd class="col-sm-9">@Model.Hostel?.Name</dd>
@@ -15,6 +20,7 @@
     <dt class="col-sm-3">Occupied</dt>
     <dd class="col-sm-9">@Model.CurrentOccupancy</dd>
 </dl>
+<a asp-action="Allocate" asp-route-roomId="@Model.RoomId" class="btn btn-success mb-3">Allocate Student</a>
 
 <h4>Students in this Room</h4>
 @if (!Model.Students.Any())

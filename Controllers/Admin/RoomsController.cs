@@ -14,11 +14,14 @@ namespace Hostel_hub.Controllers.Admin
         private readonly IHostelService _hostelService;
         private readonly IWardenContext _wardenContext;
 
-        public RoomsController(IRoomService roomService, IHostelService hostelService, IWardenContext wardenContext)
+        private readonly IStudentService _studentService;
+
+        public RoomsController(IRoomService roomService, IHostelService hostelService, IWardenContext wardenContext, IStudentService studentService)
         {
             _roomService = roomService;
             _hostelService = hostelService;
             _wardenContext = wardenContext;
+            _studentService = studentService;
         }
 
         [HttpGet("")]
@@ -180,6 +183,48 @@ namespace Hostel_hub.Controllers.Admin
         {
             string? userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             return int.Parse(userIdClaim!);
+        }
+        [HttpGet("Allocate/{roomId}")]
+        public async Task<IActionResult> Allocate(int roomId)
+        {
+            var room = await _roomService.GetRoomByIdAsync(roomId);
+            if (room == null)
+            {
+                return NotFound();
+            }
+
+            if (!await CanAccessHostelAsync(room.HostelId))
+            {
+                return Forbid();
+            }
+
+            ViewBag.Room = room;
+            ViewBag.UnallocatedStudents = await _studentService.GetUnallocatedStudentsAsync();
+            return View();
+        }
+
+        [HttpPost("Allocate/{roomId}")]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Allocate(int roomId, int studentId)
+        {
+            var room = await _roomService.GetRoomByIdAsync(roomId);
+            if (room == null)
+            {
+                return NotFound();
+            }
+
+            if (!await CanAccessHostelAsync(room.HostelId))
+            {
+                return Forbid();
+            }
+
+            var (success, errorMessage) = await _roomService.AllocateStudentAsync(studentId, roomId);
+            if (!success)
+            {
+                TempData["ErrorMessage"] = errorMessage;
+            }
+
+            return RedirectToAction("Details", new { id = roomId });
         }
     }
 }

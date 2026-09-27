@@ -19,6 +19,8 @@ namespace Hostel_hub.Models
         public int Capacity { get; set; }
 
         public int CurrentOccupancy { get; set; } = 0;
+        [Timestamp]
+        public byte[] RowVersion { get; set; } = Array.Empty<byte>();
 
         // Navigation: reverse side of Student.RoomId — lets us write
         // room.Students to see who's currently allocated here.
