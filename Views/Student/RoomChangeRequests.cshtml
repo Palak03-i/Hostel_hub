@@ -1,0 +1,36 @@
+﻿@model List<Hostel_hub.Models.RoomChangeRequest>
+
+<h2>My Room Change Requests</h2>
+
+<a asp-action="RequestRoomChange" class="btn btn-primary mb-3">Request Room Change</a>
+
+@if (!Model.Any())
+{
+    <p>No room change requests yet.</p>
+}
+else
+{
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Current Room</th>
+                <th>Requested Room</th>
+                <th>Reason</th>
+                <th>Status</th>
+                <th>Requested At</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var req in Model)
+            {
+                <tr>
+                    <td>@req.CurrentRoom?.RoomNumber</td>
+                    <td>@req.RequestedRoom?.RoomNumber</td>
+                    <td>@req.Reason</td>
+                    <td>@req.Status</td>
+                    <td>@req.RequestedAt.ToLocalTime().ToString("g")</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}

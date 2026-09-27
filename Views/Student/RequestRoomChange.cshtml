@@ -1,0 +1,28 @@
+﻿@model Hostel_hub.ViewModels.RoomChangeCreateViewModel
+
+<h2>Request Room Change</h2>
+
+<form asp-action="RequestRoomChange" method="post">
+    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+    <div class="form-group mb-3">
+        <label>Requested Room</label>
+        <select asp-for="RequestedRoomId" class="form-control">
+            <option value="">-- Select Room --</option>
+            @foreach (var room in (List<Hostel_hub.Models.Room>)ViewBag.AvailableRooms)
+            {
+                <option value="@room.RoomId">@room.Hostel?.Name - @room.RoomNumber (@room.CurrentOccupancy/@room.Capacity)</option>
+            }
+        </select>
+        <span asp-validation-for="RequestedRoomId" class="text-danger"></span>
+    </div>
+
+    <div class="form-group mb-3">
+        <label asp-for="Reason"></label>
+        <textarea asp-for="Reason" class="form-control"></textarea>
+        <span asp-validation-for="Reason" class="text-danger"></span>
+    </div>
+
+    <button type="submit" class="btn btn-primary">Submit Request</button>
+    <a asp-action="RoomChangeRequests" class="btn btn-secondary">Cancel</a>
+</form>

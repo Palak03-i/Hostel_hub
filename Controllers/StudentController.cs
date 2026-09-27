@@ -10,12 +10,16 @@ namespace Hostel_hub.Controllers
     public class StudentController : Controller
     {
         private readonly IStudentService _studentService;
+        private readonly IRoomChangeService _roomChangeService;
+        private readonly IRoomService _roomService;
 
-        public StudentController(IStudentService studentService)
+        public StudentController(IStudentService studentService, IRoomChangeService roomChangeService, IRoomService roomService)
         {
             _studentService = studentService;
+            _roomChangeService = roomChangeService;
+            _roomService = roomService;
         }
-
+        
         [HttpGet]
         public async Task<IActionResult> Profile()
         {
@@ -83,6 +87,63 @@ namespace Hostel_hub.Controllers
         {
             string? userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             return int.Parse(userIdClaim!);
+        }
+        [HttpGet]
+        public async Task<IActionResult> RoomChangeRequests()
+        {
+            var student = await _studentService.GetProfileByUserIdAsync(GetCurrentUserId());
+            if (student == null)
+            {
+                return NotFound();
+            }
+
+            var requests = await _roomChangeService.GetRequestsForStudentAsync(student.StudentId);
+            return View(requests);
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> RequestRoomChange()
+        {
+            var student = await _studentService.GetProfileByUserIdAsync(GetCurrentUserId());
+            if (student == null || !student.RoomId.HasValue)
+            {
+                TempData["ErrorMessage"] = "You must have an existing room before requesting a change.";
+                return RedirectToAction("Profile");
+            }
+
+            var allRooms = await _roomService.GetRoomsByHostelAsync(null);
+            ViewBag.AvailableRooms = allRooms.Where(r => r.RoomId != student.RoomId.Value).ToList();
+
+            return View();
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> RequestRoomChange(RoomChangeCreateViewModel model)
+        {
+            var student = await _studentService.GetProfileByUserIdAsync(GetCurrentUserId());
+            if (student == null)
+            {
+                return NotFound();
+            }
+
+            if (!ModelState.IsValid)
+            {
+                var allRooms = await _roomService.GetRoomsByHostelAsync(null);
+                ViewBag.AvailableRooms = allRooms.Where(r => r.RoomId != student.RoomId).ToList();
+                return View(model);
+            }
+
+            var (success, errorMessage) = await _roomChangeService.CreateRequestAsync(student.StudentId, model.RequestedRoomId, model.Reason);
+            if (!success)
+            {
+                ModelState.AddModelError(string.Empty, errorMessage!);
+                var allRooms = await _roomService.GetRoomsByHostelAsync(null);
+                ViewBag.AvailableRooms = allRooms.Where(r => r.RoomId != student.RoomId).ToList();
+                return View(model);
+            }
+
+            return RedirectToAction("RoomChangeRequests");
         }
     }
 }

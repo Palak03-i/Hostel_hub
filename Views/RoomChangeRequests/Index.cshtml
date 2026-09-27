@@ -1,0 +1,52 @@
+﻿@model List<Hostel_hub.Models.RoomChangeRequest>
+
+<h2>Room Change Requests</h2>
+
+@if (TempData["ErrorMessage"] != null)
+{
+    <div class="alert alert-danger">@TempData["ErrorMessage"]</div>
+}
+@if (TempData["SuccessMessage"] != null)
+{
+    <div class="alert alert-success">@TempData["SuccessMessage"]</div>
+}
+
+@if (!Model.Any())
+{
+    <p>No pending room change requests.</p>
+}
+else
+{
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Student</th>
+                <th>Current Room</th>
+                <th>Requested Room</th>
+                <th>Reason</th>
+                <th>Requested At</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var req in Model)
+            {
+                <tr>
+                    <td>@req.Student?.FullName (@req.Student?.RollNumber)</td>
+                    <td>@req.CurrentRoom?.RoomNumber</td>
+                    <td>@req.RequestedRoom?.RoomNumber (@req.RequestedRoom?.CurrentOccupancy/@req.RequestedRoom?.Capacity)</td>
+                    <td>@req.Reason</td>
+                    <td>@req.RequestedAt.ToLocalTime().ToString("g")</td>
+                    <td>
+                        <form asp-action="Approve" asp-route-id="@req.RoomChangeRequestId" method="post" class="d-inline">
+                            <button type="submit" class="btn btn-sm btn-success">Approve</button>
+                        </form>
+                        <form asp-action="Reject" asp-route-id="@req.RoomChangeRequestId" method="post" class="d-inline">
+                            <button type="submit" class="btn btn-sm btn-danger">Reject</button>
+                        </form>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
