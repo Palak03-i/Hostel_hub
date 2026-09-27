@@ -1,0 +1,34 @@
+﻿@model Hostel_hub.ViewModels.RoomViewModel
+
+<h2>Create Room</h2>
+
+<form asp-action="Create" method="post">
+    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+    <div class="form-group mb-3">
+        <label asp-for="HostelId"></label>
+        <select asp-for="HostelId" class="form-control">
+            <option value="">-- Select Hostel --</option>
+            @foreach (var hostel in (List<Hostel_hub.Models.Hostel>)ViewBag.Hostels)
+            {
+                <option value="@hostel.HostelId">@hostel.Name</option>
+            }
+        </select>
+        <span asp-validation-for="HostelId" class="text-danger"></span>
+    </div>
+
+    <div class="form-group mb-3">
+        <label asp-for="RoomNumber"></label>
+        <input asp-for="RoomNumber" class="form-control" />
+        <span asp-validation-for="RoomNumber" class="text-danger"></span>
+    </div>
+
+    <div class="form-group mb-3">
+        <label asp-for="Capacity"></label>
+        <input asp-for="Capacity" type="number" class="form-control" />
+        <span asp-validation-for="Capacity" class="text-danger"></span>
+    </div>
+
+    <button type="submit" class="btn btn-primary">Create</button>
+    <a asp-action="Index" class="btn btn-secondary">Cancel</a>
+</form>

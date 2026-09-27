@@ -1,0 +1,40 @@
+﻿@model List<Hostel_hub.Models.Room>
+
+<h2>Manage Rooms</h2>
+
+@if (TempData["ErrorMessage"] != null)
+{
+    <div class="alert alert-danger">@TempData["ErrorMessage"]</div>
+}
+
+<a asp-action="Create" class="btn btn-primary mb-3">+ Create Room</a>
+
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>Hostel</th>
+            <th>Room Number</th>
+            <th>Capacity</th>
+            <th>Occupied</th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var room in Model)
+        {
+            <tr>
+                <td>@room.Hostel?.Name</td>
+                <td>@room.RoomNumber</td>
+                <td>@room.Capacity</td>
+                <td>@room.CurrentOccupancy @(room.CurrentOccupancy >= room.Capacity ? "(Full)" : "")</td>
+                <td>
+                    <a asp-action="Details" asp-route-id="@room.RoomId" class="btn btn-sm btn-secondary">View</a>
+                    <a asp-action="Edit" asp-route-id="@room.RoomId" class="btn btn-sm btn-primary">Edit</a>
+                    <form asp-action="Delete" asp-route-id="@room.RoomId" method="post" class="d-inline">
+                        <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Delete this room?');">Delete</button>
+                    </form>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>

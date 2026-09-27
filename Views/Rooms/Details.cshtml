@@ -1,0 +1,34 @@
+﻿@model Hostel_hub.Models.Room
+
+<h2>Room Details</h2>
+
+<dl class="row">
+    <dt class="col-sm-3">Hostel</dt>
+    <dd class="col-sm-9">@Model.Hostel?.Name</dd>
+
+    <dt class="col-sm-3">Room Number</dt>
+    <dd class="col-sm-9">@Model.RoomNumber</dd>
+
+    <dt class="col-sm-3">Capacity</dt>
+    <dd class="col-sm-9">@Model.Capacity</dd>
+
+    <dt class="col-sm-3">Occupied</dt>
+    <dd class="col-sm-9">@Model.CurrentOccupancy</dd>
+</dl>
+
+<h4>Students in this Room</h4>
+@if (!Model.Students.Any())
+{
+    <p>No students currently allocated.</p>
+}
+else
+{
+    <ul>
+        @foreach (var student in Model.Students)
+        {
+            <li>@student.FullName (@student.RollNumber)</li>
+        }
+    </ul>
+}
+
+<a asp-action="Index" class="btn btn-secondary">Back to List</a>

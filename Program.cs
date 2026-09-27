@@ -11,6 +11,7 @@ builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IStudentService, StudentService>();
 builder.Services.AddScoped<IHostelService, HostelService>();
 builder.Services.AddScoped<IWardenContext, WardenContext>();
+builder.Services.AddScoped<IRoomService, RoomService>();
 
 // Add services to the container.
 builder.Services.AddControllersWithViews();
