@@ -43,6 +43,9 @@
                             <li>
                                 <a class="nav-link text-dark" asp-controller="MaintenanceStaff" asp-action="Index">Manage Staff</a>
                             </li>
+                            <li>
+                                <a class="nav-link text-dark" asp-controller="Complaints" asp-action="Index">Complaints</a>
+                            </li>
 
                         }
                         @if (User.IsInRole("Student"))
@@ -53,7 +56,16 @@
                             <li class="nav-item">
                                 <a class="nav-link text-dark" asp-controller="Student" asp-action="RoomChangeRequests">Room Change</a>
                             </li>
+                            <li>
+                                <a class="nav-link text-dark" asp-controller="Student" asp-action="Complaints">Complaints</a>
+                            </li>
 
+                        }
+                        @if (User.IsInRole("MaintenanceStaff"))
+                        {
+                            <li class="nav-item">
+                                <a class="nav-link text-dark" asp-controller="Maintenance" asp-action="AssignedComplaints">My Complaints</a>
+                            </li>
                         }
                     </ul>
                     <ul class="navbar-nav">

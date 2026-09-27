@@ -4,6 +4,7 @@ namespace Hostel_hub.Models
 {
     public enum ComplaintPriority { Low, Medium, High }
     public enum ComplaintStatus { Pending, Assigned, InProgress, Resolved }
+    public enum ComplaintCategory { Electrical, Plumbing, Furniture, WaterLeakage, Internet, Cleaning, Other }
 
     public class Complaint
     {
@@ -26,6 +27,11 @@ namespace Hostel_hub.Models
 
         [Required]
         public ComplaintStatus Status { get; set; } = ComplaintStatus.Pending;
+
+        [Required]
+        public ComplaintCategory Category { get; set; }
+
+        public DateTime? ResolvedDate { get; set; }
 
         public int? AssignedStaffId { get; set; }
         public MaintenanceStaff? AssignedStaff { get; set; }

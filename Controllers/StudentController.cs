@@ -12,14 +12,16 @@ namespace Hostel_hub.Controllers
         private readonly IStudentService _studentService;
         private readonly IRoomChangeService _roomChangeService;
         private readonly IRoomService _roomService;
-
-        public StudentController(IStudentService studentService, IRoomChangeService roomChangeService, IRoomService roomService)
+        private readonly IComplaintService _complaintService;
+        public StudentController(IStudentService studentService, IRoomChangeService roomChangeService, IRoomService roomService, IComplaintService complaintService)
         {
             _studentService = studentService;
             _roomChangeService = roomChangeService;
             _roomService = roomService;
+            _complaintService = complaintService;
+
         }
-        
+
         [HttpGet]
         public async Task<IActionResult> Profile()
         {
@@ -144,6 +146,53 @@ namespace Hostel_hub.Controllers
             }
 
             return RedirectToAction("RoomChangeRequests");
+        }
+        [HttpGet]
+        public async Task<IActionResult> Complaints()
+        {
+            var student = await _studentService.GetProfileByUserIdAsync(GetCurrentUserId());
+            if (student == null) return NotFound();
+
+            var complaints = await _complaintService.GetComplaintsForStudentAsync(student.StudentId);
+            return View(complaints);
+        }
+
+        [HttpGet]
+        public IActionResult CreateComplaint() => View();
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> CreateComplaint(ComplaintCreateViewModel model)
+        {
+            if (!ModelState.IsValid) return View(model);
+
+            var student = await _studentService.GetProfileByUserIdAsync(GetCurrentUserId());
+            if (student == null) return NotFound();
+
+            var (success, error) = await _complaintService.CreateComplaintAsync(student.StudentId, model.Title, model.Description, model.Category);
+            if (!success)
+            {
+                ModelState.AddModelError(string.Empty, error!);
+                return View(model);
+            }
+
+            return RedirectToAction("Complaints");
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> ComplaintDetails(int id)
+        {
+            var student = await _studentService.GetProfileByUserIdAsync(GetCurrentUserId());
+            if (student == null) return NotFound();
+
+            var complaint = await _complaintService.GetComplaintByIdAsync(id);
+            if (complaint == null || complaint.StudentId != student.StudentId)
+            {
+                return Forbid();
+            }
+
+            ViewBag.History = await _complaintService.GetHistoryAsync(id);
+            return View(complaint);
         }
     }
 }

@@ -1,0 +1,33 @@
+﻿@model List<Hostel_hub.Models.Complaint>
+
+<h2>All Complaints</h2>
+
+<form method="get" class="row g-2 mb-3">
+    <div class="col-auto">
+        <select name="status" class="form-control">
+            <option value="">-- Status --</option>
+            @foreach (var s in Enum.GetValues<Hostel_hub.Models.ComplaintStatus>())
+            {
+                <option value="@s">@s</option>
+            }
+        </select>
+    </div>
+    <div class="col-auto"><button type="submit" class="btn btn-secondary">Filter</button></div>
+</form>
+
+<table class="table table-striped">
+    <thead><tr><th>Title</th><th>Student</th><th>Category</th><th>Priority</th><th>Status</th><th></th></tr></thead>
+    <tbody>
+        @foreach (var c in Model)
+        {
+            <tr>
+                <td>@c.Title</td>
+                <td>@c.Student?.FullName</td>
+                <td>@c.Category</td>
+                <td>@c.Priority</td>
+                <td>@c.Status</td>
+                <td><a asp-action="Details" asp-route-id="@c.ComplaintId" class="btn btn-sm btn-secondary">View</a></td>
+            </tr>
+        }
+    </tbody>
+</table>

@@ -1,0 +1,49 @@
+﻿@model Hostel_hub.Models.Complaint
+
+<h2>@Model.Title</h2>
+
+@if (TempData["ErrorMessage"] != null)
+{
+    <div class="alert alert-danger">@TempData["ErrorMessage"]</div>
+}
+
+<dl class="row">
+    <dt class="col-sm-3">Student</dt><dd class="col-sm-9">@Model.Student?.FullName</dd>
+    <dt class="col-sm-3">Category</dt><dd class="col-sm-9">@Model.Category</dd>
+    <dt class="col-sm-3">Status</dt><dd class="col-sm-9">@Model.Status</dd>
+    <dt class="col-sm-3">Description</dt><dd class="col-sm-9">@Model.Description</dd>
+    <dt class="col-sm-3">Assigned Staff</dt><dd class="col-sm-9">@(Model.AssignedStaff?.FullName ?? "Not yet assigned")</dd>
+</dl>
+
+<form asp-action="SetPriority" asp-route-id="@Model.ComplaintId" method="post" class="mb-3">
+    <select name="priority" class="form-control d-inline-block w-auto">
+        @foreach (var p in Enum.GetValues<Hostel_hub.Models.ComplaintPriority>())
+        {
+            <option value="@p" selected="@(p == Model.Priority)">@p</option>
+        }
+    </select>
+    <button type="submit" class="btn btn-sm btn-primary">Update Priority</button>
+</form>
+
+@if (Model.Status != Hostel_hub.Models.ComplaintStatus.Resolved)
+{
+    <form asp-action="Assign" asp-route-id="@Model.ComplaintId" method="post" class="mb-3">
+        <select name="staffId" class="form-control d-inline-block w-auto">
+            @foreach (var s in (List<Hostel_hub.Models.MaintenanceStaff>)ViewBag.StaffList)
+            {
+                <option value="@s.MaintenanceStaffId">@s.FullName (@s.Specialization)</option>
+            }
+        </select>
+        <button type="submit" class="btn btn-sm btn-success">Assign</button>
+    </form>
+}
+
+<h4>History</h4>
+<ul>
+    @foreach (var h in (List<Hostel_hub.Models.ComplaintStatusHistory>)ViewBag.History)
+    {
+        <li>@h.ChangedAt.ToLocalTime().ToString("g") — @h.OldStatus → @h.NewStatus by @h.ChangedBy</li>
+    }
+</ul>
+
+<a asp-action="Index" class="btn btn-secondary">Back</a>

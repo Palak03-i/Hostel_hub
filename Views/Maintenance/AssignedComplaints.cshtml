@@ -1,0 +1,15 @@
+﻿@model List<Hostel_hub.Models.Complaint>
+
+<h2>My Assigned Complaints</h2>
+<table class="table table-striped">
+    <thead><tr><th>Title</th><th>Category</th><th>Priority</th><th>Status</th><th></th></tr></thead>
+    <tbody>
+        @foreach (var c in Model)
+        {
+            <tr>
+                <td>@c.Title</td><td>@c.Category</td><td>@c.Priority</td><td>@c.Status</td>
+                <td><a asp-action="ComplaintDetails" asp-route-id="@c.ComplaintId" class="btn btn-sm btn-secondary">View</a></td>
+            </tr>
+        }
+    </tbody>
+</table>

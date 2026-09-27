@@ -20,6 +20,7 @@ namespace Hostel_hub.Data
         public DbSet<Announcement> Announcements { get; set; }
         public DbSet<Feedback> Feedbacks { get; set; }
         public DbSet<Warden> Wardens { get; set; }
+        public DbSet<ComplaintStatusHistory> ComplaintStatusHistories { get; set; }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             // Unique constraints

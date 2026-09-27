@@ -1,0 +1,20 @@
+﻿@model Hostel_hub.Models.Complaint
+
+<h2>@Model.Title</h2>
+<dl class="row">
+    <dt class="col-sm-3">Category</dt><dd class="col-sm-9">@Model.Category</dd>
+    <dt class="col-sm-3">Priority</dt><dd class="col-sm-9">@Model.Priority</dd>
+    <dt class="col-sm-3">Status</dt><dd class="col-sm-9">@Model.Status</dd>
+    <dt class="col-sm-3">Description</dt><dd class="col-sm-9">@Model.Description</dd>
+    <dt class="col-sm-3">Assigned Staff</dt><dd class="col-sm-9">@(Model.AssignedStaff?.FullName ?? "Not yet assigned")</dd>
+</dl>
+
+<h4>History</h4>
+<ul>
+    @foreach (var h in (List<Hostel_hub.Models.ComplaintStatusHistory>)ViewBag.History)
+    {
+        <li>@h.ChangedAt.ToLocalTime().ToString("g") — @h.OldStatus → @h.NewStatus by @h.ChangedBy @(h.Remarks != null ? $"({h.Remarks})" : "")</li>
+    }
+</ul>
+
+<a asp-action="Complaints" class="btn btn-secondary">Back</a>

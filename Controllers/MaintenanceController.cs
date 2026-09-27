@@ -1,0 +1,76 @@
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
+using Microsoft.EntityFrameworkCore;
+using Hostel_hub.Data;
+using Hostel_hub.Models;
+using Hostel_hub.Services;
+
+namespace Hostel_hub.Controllers
+{
+    [Authorize(Roles = "MaintenanceStaff")]
+    public class MaintenanceController : Controller
+    {
+        private readonly IComplaintService _complaintService;
+        private readonly ApplicationDbContext _context;
+
+        public MaintenanceController(IComplaintService complaintService, ApplicationDbContext context)
+        {
+            _complaintService = complaintService;
+            _context = context;
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> AssignedComplaints()
+        {
+            var staffId = await GetCurrentStaffIdAsync();
+            if (staffId == null) return NotFound();
+
+            var complaints = await _complaintService.GetAssignedComplaintsAsync(staffId.Value);
+            return View(complaints);
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> ComplaintDetails(int id)
+        {
+            var staffId = await GetCurrentStaffIdAsync();
+            if (staffId == null) return NotFound();
+
+            var complaint = await _complaintService.GetComplaintByIdAsync(id);
+            if (complaint == null || complaint.AssignedStaffId != staffId.Value)
+            {
+                return Forbid();
+            }
+
+            ViewBag.History = await _complaintService.GetHistoryAsync(id);
+            return View(complaint);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> UpdateStatus(int complaintId, ComplaintStatus newStatus)
+        {
+            var staffId = await GetCurrentStaffIdAsync();
+            if (staffId == null) return NotFound();
+
+            var complaint = await _complaintService.GetComplaintByIdAsync(complaintId);
+            if (complaint == null || complaint.AssignedStaffId != staffId.Value)
+            {
+                return Forbid();
+            }
+
+            var (success, error) = await _complaintService.UpdateStatusAsync(complaintId, newStatus, "MaintenanceStaff", null);
+            if (!success) TempData["ErrorMessage"] = error;
+
+            return RedirectToAction("ComplaintDetails", new { id = complaintId });
+        }
+
+        private async Task<int?> GetCurrentStaffIdAsync()
+        {
+            string? userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            int userId = int.Parse(userIdClaim!);
+            var staff = await _context.MaintenanceStaff.FirstOrDefaultAsync(s => s.UserId == userId);
+            return staff?.MaintenanceStaffId;
+        }
+    }
+}
