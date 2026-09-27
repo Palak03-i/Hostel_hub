@@ -1,0 +1,27 @@
+﻿@model List<Hostel_hub.Models.MaintenanceStaff>
+
+<h2>Manage Maintenance Staff</h2>
+<a asp-action="Create" class="btn btn-primary mb-3">+ Add Staff</a>
+
+<form method="get" class="row g-2 mb-3">
+    <div class="col-auto">
+        <input type="text" name="search" value="@Context.Request.Query["search"]" class="form-control" placeholder="Search by name" />
+    </div>
+    <div class="col-auto"><button type="submit" class="btn btn-secondary">Search</button></div>
+</form>
+
+<table class="table table-striped">
+    <thead><tr><th>Name</th><th>Email</th><th>Phone</th><th>Specialization</th><th></th></tr></thead>
+    <tbody>
+        @foreach (var staff in Model)
+        {
+            <tr>
+                <td>@staff.FullName</td>
+                <td>@staff.User?.Email</td>
+                <td>@(staff.PhoneNumber ?? "-")</td>
+                <td>@staff.Specialization</td>
+                <td><a asp-action="Edit" asp-route-id="@staff.MaintenanceStaffId" class="btn btn-sm btn-primary">Edit</a></td>
+            </tr>
+        }
+    </tbody>
+</table>
