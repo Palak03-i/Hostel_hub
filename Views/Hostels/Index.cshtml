@@ -1,0 +1,45 @@
+﻿@model List<Hostel_hub.Models.Hostel>
+
+<h2>Manage Hostels</h2>
+
+@if (TempData["ErrorMessage"] != null)
+{
+    <div class="alert alert-danger">@TempData["ErrorMessage"]</div>
+}
+
+<a asp-action="Create" class="btn btn-primary mb-3">+ Create Hostel</a>
+
+@if (!Model.Any())
+{
+    <p>No hostels found.</p>
+}
+else
+{
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Type</th>
+                <th>Total Rooms</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var hostel in Model)
+            {
+                <tr>
+                    <td>@hostel.Name</td>
+                    <td>@hostel.Type</td>
+                    <td>@hostel.Rooms.Count</td>
+                    <td>
+                        <a asp-action="Details" asp-route-id="@hostel.HostelId" class="btn btn-sm btn-secondary">View</a>
+                        <a asp-action="Edit" asp-route-id="@hostel.HostelId" class="btn btn-sm btn-primary">Edit</a>
+                        <form asp-action="Delete" asp-route-id="@hostel.HostelId" method="post" class="d-inline">
+                            <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Delete this hostel?');">Delete</button>
+                        </form>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}

@@ -4,6 +4,7 @@ using Hostel_hub.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Hostel_hub.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260926133138_RestrictHostelRoomDelete")]
+    partial class RestrictHostelRoomDelete
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -321,37 +324,6 @@ namespace Hostel_hub.Migrations
                     b.ToTable("Users");
                 });
 
-            modelBuilder.Entity("Hostel_hub.Models.Warden", b =>
-                {
-                    b.Property<int>("WardenId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("WardenId"));
-
-                    b.Property<string>("FullName")
-                        .IsRequired()
-                        .HasMaxLength(150)
-                        .HasColumnType("nvarchar(150)");
-
-                    b.Property<int?>("HostelId")
-                        .HasColumnType("int");
-
-                    b.Property<int>("UserId")
-                        .HasColumnType("int");
-
-                    b.HasKey("WardenId");
-
-                    b.HasIndex("HostelId")
-                        .IsUnique()
-                        .HasFilter("[HostelId] IS NOT NULL");
-
-                    b.HasIndex("UserId")
-                        .IsUnique();
-
-                    b.ToTable("Wardens");
-                });
-
             modelBuilder.Entity("Hostel_hub.Models.Announcement", b =>
                 {
                     b.HasOne("Hostel_hub.Models.User", "PostedByUser")
@@ -459,24 +431,6 @@ namespace Hostel_hub.Migrations
                     b.Navigation("Hostel");
 
                     b.Navigation("Room");
-
-                    b.Navigation("User");
-                });
-
-            modelBuilder.Entity("Hostel_hub.Models.Warden", b =>
-                {
-                    b.HasOne("Hostel_hub.Models.Hostel", "Hostel")
-                        .WithMany()
-                        .HasForeignKey("HostelId")
-                        .OnDelete(DeleteBehavior.SetNull);
-
-                    b.HasOne("Hostel_hub.Models.User", "User")
-                        .WithOne()
-                        .HasForeignKey("Hostel_hub.Models.Warden", "UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Hostel");
 
                     b.Navigation("User");
                 });

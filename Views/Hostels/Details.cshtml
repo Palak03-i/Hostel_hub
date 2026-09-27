@@ -1,0 +1,16 @@
+﻿@model Hostel_hub.Models.Hostel
+
+<h2>Hostel Details</h2>
+
+<dl class="row">
+    <dt class="col-sm-3">Name</dt>
+    <dd class="col-sm-9">@Model.Name</dd>
+
+    <dt class="col-sm-3">Type</dt>
+    <dd class="col-sm-9">@Model.Type</dd>
+
+    <dt class="col-sm-3">Total Rooms</dt>
+    <dd class="col-sm-9">@Model.Rooms.Count</dd>
+</dl>
+
+<a asp-action="Index" class="btn btn-secondary">Back to List</a>

@@ -19,6 +19,7 @@ namespace Hostel_hub.Data
         public DbSet<RoomChangeRequest> RoomChangeRequests { get; set; }
         public DbSet<Announcement> Announcements { get; set; }
         public DbSet<Feedback> Feedbacks { get; set; }
+        public DbSet<Warden> Wardens { get; set; }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             // Unique constraints
@@ -64,6 +65,30 @@ namespace Hostel_hub.Data
                 .WithMany()
                 .HasForeignKey(r => r.RequestedRoomId)
                 .OnDelete(DeleteBehavior.Restrict);
+            modelBuilder.Entity<Room>()
+                .HasOne(r => r.Hostel)
+                .WithMany(h => h.Rooms)
+                .HasForeignKey(r => r.HostelId)
+                .OnDelete(DeleteBehavior.Restrict);
+            modelBuilder.Entity<Warden>()
+                .HasIndex(w => w.UserId)
+                .IsUnique();
+
+            modelBuilder.Entity<Warden>()
+                .HasIndex(w => w.HostelId)
+                .IsUnique()
+                .HasFilter("[HostelId] IS NOT NULL");
+            modelBuilder.Entity<Warden>()
+                .HasOne(w => w.User)
+                .WithOne()
+                .HasForeignKey<Warden>(w => w.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<Warden>()
+                .HasOne(w => w.Hostel)
+                .WithMany()
+                .HasForeignKey(w => w.HostelId)
+                .OnDelete(DeleteBehavior.SetNull);
         }
     }
 }
