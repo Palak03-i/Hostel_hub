@@ -1,0 +1,27 @@
+﻿@model List<Hostel_hub.Models.Announcement>
+
+<h2>Announcements</h2>
+
+@if (!Model.Any())
+{
+    <p>No active announcements.</p>
+}
+else
+{
+    @foreach (var a in Model)
+    {
+        <div class="card mb-3 @(a.IsImportant ? "border-danger" : "")">
+            <div class="card-header">
+                @a.Title
+                @if (a.IsImportant)
+                {
+                    <span class="badge bg-danger">Important</span>
+                }
+            </div>
+            <div class="card-body">
+                <p>@a.Content</p>
+                <small class="text-muted">Posted @a.PostedAt.ToString("d")</small>
+            </div>
+        </div>
+    }
+}

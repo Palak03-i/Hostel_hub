@@ -19,5 +19,17 @@ namespace Hostel_hub.Models
         public User? PostedByUser { get; set; }
 
         public DateTime PostedAt { get; set; } = DateTime.UtcNow;
+
+        [Required]
+        public DateOnly PublishDate { get; set; }
+
+        [Required]
+        public DateOnly ExpiryDate { get; set; }
+
+        public bool IsImportant { get; set; } = false;
+
+        // Soft delete: Admin "removing" an announcement sets this false
+        // rather than deleting the row, preserving the audit trail.
+        public bool IsActive { get; set; } = true;
     }
 }

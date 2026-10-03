@@ -1,0 +1,37 @@
+﻿@model List<Hostel_hub.Models.Announcement>
+
+<h2>Manage Announcements</h2>
+
+@if (TempData["ErrorMessage"] != null)
+{
+    <div class="alert alert-danger">@TempData["ErrorMessage"]</div>
+}
+
+<a asp-action="Create" class="btn btn-primary mb-3">+ Create Announcement</a>
+
+<table class="table table-striped">
+    <thead>
+        <tr><th>Title</th><th>Publish</th><th>Expiry</th><th>Important</th><th>Status</th><th></th></tr>
+    </thead>
+    <tbody>
+        @foreach (var a in Model)
+        {
+            <tr>
+                <td>@a.Title</td>
+                <td>@a.PublishDate.ToString("d")</td>
+                <td>@a.ExpiryDate.ToString("d")</td>
+                <td>@(a.IsImportant ? "Yes" : "No")</td>
+                <td>@(a.IsActive ? "Active" : "Removed")</td>
+                <td>
+                    <a asp-action="Edit" asp-route-id="@a.AnnouncementId" class="btn btn-sm btn-primary">Edit</a>
+                    @if (a.IsActive)
+                    {
+                        <form asp-action="Deactivate" asp-route-id="@a.AnnouncementId" method="post" class="d-inline">
+                            <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Remove this announcement from student view?');">Remove</button>
+                        </form>
+                    }
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>

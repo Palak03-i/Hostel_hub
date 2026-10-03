@@ -1,0 +1,37 @@
+﻿@model Hostel_hub.ViewModels.AnnouncementViewModel
+
+<h2>Edit Announcement</h2>
+
+<form asp-action="Edit" asp-route-id="@ViewBag.AnnouncementId" method="post">
+    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+    <div class="form-group mb-3">
+        <label asp-for="Title"></label>
+        <input asp-for="Title" class="form-control" />
+        <span asp-validation-for="Title" class="text-danger"></span>
+    </div>
+
+    <div class="form-group mb-3">
+        <label asp-for="Content"></label>
+        <textarea asp-for="Content" class="form-control" rows="4"></textarea>
+        <span asp-validation-for="Content" class="text-danger"></span>
+    </div>
+
+    <div class="form-group mb-3">
+        <label asp-for="PublishDate"></label>
+        <input asp-for="PublishDate" class="form-control" />
+    </div>
+
+    <div class="form-group mb-3">
+        <label asp-for="ExpiryDate"></label>
+        <input asp-for="ExpiryDate" class="form-control" />
+    </div>
+
+    <div class="form-check mb-3">
+        <input asp-for="IsImportant" class="form-check-input" />
+        <label asp-for="IsImportant" class="form-check-label">Mark as important</label>
+    </div>
+
+    <button type="submit" class="btn btn-primary">Save</button>
+    <a asp-action="Index" class="btn btn-secondary">Cancel</a>
+</form>
