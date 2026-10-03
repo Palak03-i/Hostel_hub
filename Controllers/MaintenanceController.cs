@@ -1,10 +1,11 @@
-﻿using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Mvc;
-using System.Security.Claims;
-using Microsoft.EntityFrameworkCore;
-using Hostel_hub.Data;
+﻿using Hostel_hub.Data;
 using Hostel_hub.Models;
 using Hostel_hub.Services;
+using Hostel_hub.ViewModels;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using System.Security.Claims;
 
 namespace Hostel_hub.Controllers
 {
@@ -71,6 +72,31 @@ namespace Hostel_hub.Controllers
             int userId = int.Parse(userIdClaim!);
             var staff = await _context.MaintenanceStaff.FirstOrDefaultAsync(s => s.UserId == userId);
             return staff?.MaintenanceStaffId;
+        }
+        [HttpGet]
+        public async Task<IActionResult> Dashboard()
+        {
+            int userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)!.Value);
+            var staff = await _context.MaintenanceStaff.FirstOrDefaultAsync(s => s.UserId == userId);
+            if (staff == null) return NotFound();
+
+            var assigned = await _complaintService.GetAssignedComplaintsAsync(staff.MaintenanceStaffId);
+
+            var model = new StaffDashboardViewModel
+            {
+                FullName = staff.FullName,
+                Specialization = staff.Specialization,
+                TotalAssigned = assigned.Count,
+                PendingCount = assigned.Count(c => c.Status == ComplaintStatus.Assigned),
+                InProgressCount = assigned.Count(c => c.Status == ComplaintStatus.InProgress),
+                RecentlyResolved = assigned
+                    .Where(c => c.Status == ComplaintStatus.Resolved)
+                    .OrderByDescending(c => c.ResolvedDate)
+                    .Take(5)
+                    .ToList()
+            };
+
+            return View(model);
         }
     }
 }

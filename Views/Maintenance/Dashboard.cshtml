@@ -1,0 +1,54 @@
+﻿@model Hostel_hub.ViewModels.StaffDashboardViewModel
+
+<h2>Welcome, @Model.FullName</h2>
+<p><strong>Specialization:</strong> @Model.Specialization</p>
+
+<div class="row">
+    <div class="col-md-4">
+        <div class="card mb-3">
+            <div class="card-body">
+                <h5>Total Assigned</h5>
+                <p class="display-6">@Model.TotalAssigned</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card mb-3">
+            <div class="card-body">
+                <h5>Pending</h5>
+                <p class="display-6">@Model.PendingCount</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card mb-3">
+            <div class="card-body">
+                <h5>In Progress</h5>
+                <p class="display-6">@Model.InProgressCount</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<h4>Recently Resolved</h4>
+@if (!Model.RecentlyResolved.Any())
+{
+    <p>No resolved complaints yet.</p>
+}
+else
+{
+    <table class="table table-striped">
+        <thead><tr><th>Title</th><th>Resolved On</th></tr></thead>
+        <tbody>
+            @foreach (var c in Model.RecentlyResolved)
+            {
+                <tr>
+                    <td>@c.Title</td>
+                    <td>@c.ResolvedDate?.ToString("g")</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+<a asp-action="AssignedComplaints" class="btn btn-primary">View All Assigned Complaints</a>

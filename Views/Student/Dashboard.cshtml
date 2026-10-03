@@ -1,0 +1,90 @@
+﻿@model Hostel_hub.ViewModels.StudentDashboardViewModel
+
+<h2>Welcome, @Model.FullName</h2>
+
+<div class="row">
+    <div class="col-md-6">
+        <div class="card mb-3">
+            <div class="card-header">My Room</div>
+            <div class="card-body">
+                @if (Model.RoomNumber != null)
+                {
+                    <p><strong>Hostel:</strong> @Model.HostelName</p>
+                    <p><strong>Room:</strong> @Model.RoomNumber (@Model.RoomCurrentOccupancy / @Model.RoomCapacity occupied)</p>
+                }
+                else
+                {
+                    <p>You are not currently allocated to a room.</p>
+                }
+
+                @if (Model.PendingRoomChangeRequest != null)
+                {
+                    <p class="text-info">You have a pending room change request.</p>
+                }
+            </div>
+        </div>
+
+        <div class="card mb-3">
+            <div class="card-header">Today's Menu</div>
+            <div class="card-body">
+                @if (Model.TodayMenu == null)
+                {
+                    <p>No menu published for today.</p>
+                }
+                else
+                {
+                    @foreach (var meal in new[] { Hostel_hub.Models.MealType.Breakfast, Hostel_hub.Models.MealType.Lunch, Hostel_hub.Models.MealType.Dinner })
+                    {
+                        Model.TodaySelections.TryGetValue(meal, out var status);
+                        <p>
+                            @meal:
+                            @if (Model.TodaySelections.ContainsKey(meal))
+                            {
+                                <span class="badge @(status == Hostel_hub.Models.MealSelectionStatus.Take ? "bg-success" : "bg-secondary")">@status</span>
+                            }
+                            else
+                            {
+                                <span class="badge bg-warning text-dark">Not selected</span>
+                            }
+                        </p>
+                    }
+                }
+                <a asp-action="Mess" class="btn btn-sm btn-primary">Go to Mess Menu</a>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-6">
+        <div class="card mb-3">
+            <div class="card-header">Complaints</div>
+            <div class="card-body">
+                <p><strong>Active complaints:</strong> @Model.ActiveComplaints.Count</p>
+                @if (Model.LatestComplaint != null)
+                {
+                    <p><strong>Latest:</strong> @Model.LatestComplaint.Title — @Model.LatestComplaint.Status</p>
+                }
+                <a asp-action="Complaints" class="btn btn-sm btn-primary">View Complaints</a>
+            </div>
+        </div>
+
+        <div class="card mb-3">
+            <div class="card-header">Recent Announcements</div>
+            <div class="card-body">
+                @if (!Model.RecentAnnouncements.Any())
+                {
+                    <p>No active announcements.</p>
+                }
+                else
+                {
+                    <ul>
+                        @foreach (var a in Model.RecentAnnouncements)
+                        {
+                            <li>@a.Title @(a.IsImportant ? "⚠️" : "")</li>
+                        }
+                    </ul>
+                }
+                <a asp-action="Announcements" class="btn btn-sm btn-primary">View All</a>
+            </div>
+        </div>
+    </div>
+</div>

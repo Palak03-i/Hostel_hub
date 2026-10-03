@@ -1,0 +1,57 @@
+﻿@model Hostel_hub.ViewModels.AdminDashboardViewModel
+
+<h2>Admin Dashboard</h2>
+
+<div class="row">
+    <div class="col-md-3">
+        <div class="card mb-3">
+            <div class="card-body">
+                <h5>Students</h5>
+                <p class="display-6">@Model.TotalStudents</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card mb-3">
+            <div class="card-body">
+                <h5>Hostels</h5>
+                <p class="display-6">@Model.TotalHostels</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card mb-3">
+            <div class="card-body">
+                <h5>Active Announcements</h5>
+                <p class="display-6">@Model.ActiveAnnouncementsCount</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<h4>Rooms</h4>
+<table class="table table-bordered w-auto">
+    <tr><th>Total</th><td>@Model.TotalRooms</td></tr>
+    <tr><th>Occupied</th><td>@Model.OccupiedRooms</td></tr>
+    <tr><th>Available</th><td>@Model.AvailableRooms</td></tr>
+    <tr><th>Full</th><td>@Model.FullRooms</td></tr>
+</table>
+
+<h4>Complaints</h4>
+<table class="table table-bordered w-auto">
+    <tr><th>Total</th><td>@Model.TotalComplaints</td></tr>
+    <tr><th>Pending</th><td>@Model.PendingComplaints</td></tr>
+    <tr><th>Assigned</th><td>@Model.AssignedComplaints</td></tr>
+    <tr><th>In Progress</th><td>@Model.InProgressComplaints</td></tr>
+    <tr><th>Resolved</th><td>@Model.ResolvedComplaints</td></tr>
+    <tr><th>High Priority</th><td>@Model.HighPriorityComplaints</td></tr>
+    <tr><th>Medium Priority</th><td>@Model.MediumPriorityComplaints</td></tr>
+    <tr><th>Low Priority</th><td>@Model.LowPriorityComplaints</td></tr>
+</table>
+
+<h4>Today's Mess Participation (Taking)</h4>
+<table class="table table-bordered w-auto">
+    <tr><th>Breakfast</th><td>@Model.TodayBreakfastTaking</td></tr>
+    <tr><th>Lunch</th><td>@Model.TodayLunchTaking</td></tr>
+    <tr><th>Dinner</th><td>@Model.TodayDinnerTaking</td></tr>
+</table>
