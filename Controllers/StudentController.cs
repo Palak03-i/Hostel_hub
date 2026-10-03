@@ -13,13 +13,20 @@ namespace Hostel_hub.Controllers
         private readonly IRoomChangeService _roomChangeService;
         private readonly IRoomService _roomService;
         private readonly IComplaintService _complaintService;
-        public StudentController(IStudentService studentService, IRoomChangeService roomChangeService, IRoomService roomService, IComplaintService complaintService)
+        private readonly IMessMenuService _messMenuService;
+        private readonly IMealSelectionService _mealSelectionService;
+        private readonly IFeedbackService _feedbackService;
+        private readonly IAnnouncementService _announcementService;
+        public StudentController(IStudentService studentService, IRoomChangeService roomChangeService, IRoomService roomService, IComplaintService complaintService, IMessMenuService messMenuService, IMealSelectionService mealSelectionService, IFeedbackService feedbackService, IAnnouncementService announcementService)
         {
             _studentService = studentService;
             _roomChangeService = roomChangeService;
             _roomService = roomService;
             _complaintService = complaintService;
-
+            _messMenuService = messMenuService;
+            _mealSelectionService = mealSelectionService;
+            _feedbackService = feedbackService;
+            _announcementService = announcementService;
         }
 
         [HttpGet]
@@ -194,5 +201,179 @@ namespace Hostel_hub.Controllers
             ViewBag.History = await _complaintService.GetHistoryAsync(id);
             return View(complaint);
         }
+        [HttpGet]
+        public async Task<IActionResult> Mess()
+        {
+            int userId = GetCurrentUserId();
+            var student = await _studentService.GetProfileByUserIdAsync(userId);
+
+            if (student == null)
+            {
+                return NotFound();
+            }
+
+            var model = new MessOverviewViewModel();
+
+            if (student.HostelId == null)
+            {
+                model.NoticeMessage = "You are not currently allocated to a hostel, so no mess menu is available yet.";
+                return View(model);
+            }
+
+            var today = DateOnly.FromDateTime(DateTime.Today);
+            var tomorrow = today.AddDays(1);
+
+            model.TodayMenu = await _messMenuService.GetMenuByHostelAndDateAsync(student.HostelId.Value, today);
+            model.TomorrowMenu = await _messMenuService.GetMenuByHostelAndDateAsync(student.HostelId.Value, tomorrow);
+
+            if (model.TodayMenu == null && model.TomorrowMenu == null)
+            {
+                model.NoticeMessage = "No menu has been published for your hostel yet.";
+            }
+
+            if (model.TodayMenu != null)
+            {
+                var todaySelections = await _mealSelectionService.GetSelectionsForStudentAsync(student.StudentId, model.TodayMenu.MessMenuId);
+                model.TodaySelections = todaySelections.ToDictionary(s => s.MealType, s => s.Status);
+            }
+
+            if (model.TomorrowMenu != null)
+            {
+                var tomorrowSelections = await _mealSelectionService.GetSelectionsForStudentAsync(student.StudentId, model.TomorrowMenu.MessMenuId);
+                model.TomorrowSelections = tomorrowSelections.ToDictionary(s => s.MealType, s => s.Status);
+            }
+
+            return View(model);
+        }
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> SelectMeal(int menuId, Hostel_hub.Models.MealType mealType, Hostel_hub.Models.MealSelectionStatus status)
+        {
+            int userId = GetCurrentUserId();
+            var student = await _studentService.GetProfileByUserIdAsync(userId);
+
+            if (student == null)
+            {
+                return NotFound();
+            }
+
+            var (success, errorMessage) = await _mealSelectionService.SelectMealAsync(student.StudentId, menuId, mealType, status);
+
+            if (!success)
+            {
+                TempData["ErrorMessage"] = errorMessage;
+            }
+            else
+            {
+                TempData["SuccessMessage"] = $"{mealType} set to {status}.";
+            }
+
+            return RedirectToAction("Mess");
+        }
+        [HttpGet]
+        public async Task<IActionResult> Feedback()
+        {
+            var student = await _studentService.GetProfileByUserIdAsync(GetCurrentUserId());
+            if (student == null) return NotFound();
+
+            var feedback = await _feedbackService.GetFeedbackForStudentAsync(student.StudentId);
+            return View(feedback);
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> SubmitFeedback()
+        {
+            var student = await _studentService.GetProfileByUserIdAsync(GetCurrentUserId());
+            if (student == null) return NotFound();
+
+            var resolvedComplaints = (await _complaintService.GetComplaintsForStudentAsync(student.StudentId))
+                .Where(c => c.Status == Hostel_hub.Models.ComplaintStatus.Resolved)
+                .ToList();
+            ViewBag.ResolvedComplaints = resolvedComplaints;
+
+            return View();
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> SubmitFeedback(FeedbackCreateViewModel model)
+        {
+            var student = await _studentService.GetProfileByUserIdAsync(GetCurrentUserId());
+            if (student == null) return NotFound();
+
+            if (!ModelState.IsValid)
+            {
+                var resolvedComplaints = (await _complaintService.GetComplaintsForStudentAsync(student.StudentId))
+                    .Where(c => c.Status == Hostel_hub.Models.ComplaintStatus.Resolved)
+                    .ToList();
+                ViewBag.ResolvedComplaints = resolvedComplaints;
+                return View(model);
+            }
+
+            var (success, errorMessage) = await _feedbackService.SubmitFeedbackAsync(student.StudentId, model.Source, model.ComplaintId, model.Rating, model.Comments);
+            if (!success)
+            {
+                ModelState.AddModelError(string.Empty, errorMessage!);
+                var resolvedComplaints = (await _complaintService.GetComplaintsForStudentAsync(student.StudentId))
+                    .Where(c => c.Status == Hostel_hub.Models.ComplaintStatus.Resolved)
+                    .ToList();
+                ViewBag.ResolvedComplaints = resolvedComplaints;
+                return View(model);
+            }
+
+            return RedirectToAction("Feedback");
+        }
+        [HttpGet]
+        public async Task<IActionResult> Announcements()
+        {
+            var announcements = await _announcementService.GetActiveAnnouncementsAsync();
+            return View(announcements);
+        }
+        [HttpGet]
+        public async Task<IActionResult> Dashboard()
+        {
+            var student = await _studentService.GetProfileByUserIdAsync(GetCurrentUserId());
+            if (student == null) return NotFound();
+
+            var model = new StudentDashboardViewModel
+            {
+                FullName = student.FullName,
+                HostelName = student.Hostel?.Name,
+                RoomNumber = student.Room?.RoomNumber,
+                RoomCapacity = student.Room?.Capacity,
+                RoomCurrentOccupancy = student.Room?.CurrentOccupancy
+            };
+
+            if (student.HostelId.HasValue)
+            {
+                var today = DateOnly.FromDateTime(DateTime.Today);
+                model.TodayMenu = await _messMenuService.GetMenuByHostelAndDateAsync(student.HostelId.Value, today);
+
+                if (model.TodayMenu != null)
+                {
+                    var selections = await _mealSelectionService.GetSelectionsForStudentAsync(student.StudentId, model.TodayMenu.MessMenuId);
+                    model.TodaySelections = selections.ToDictionary(s => s.MealType, s => s.Status);
+                }
+            }
+
+            var allComplaints = await _complaintService.GetComplaintsForStudentAsync(student.StudentId);
+            model.ActiveComplaints = allComplaints
+                .Where(c => c.Status != Hostel_hub.Models.ComplaintStatus.Resolved)
+                .ToList();
+            model.LatestComplaint = allComplaints
+                .OrderByDescending(c => c.CreatedAt)
+                .FirstOrDefault();
+
+            model.RecentAnnouncements = (await _announcementService.GetActiveAnnouncementsAsync())
+                .Take(5)
+                .ToList();
+
+            var roomChangeRequests = await _roomChangeService.GetRequestsForStudentAsync(student.StudentId);
+            model.PendingRoomChangeRequest = roomChangeRequests
+                .FirstOrDefault(r => r.Status == Hostel_hub.Models.RoomChangeStatus.Pending);
+
+            return View(model);
+        }
+
     }
 }

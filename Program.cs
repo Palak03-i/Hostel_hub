@@ -15,6 +15,11 @@ builder.Services.AddScoped<IRoomService, RoomService>();
 builder.Services.AddScoped<IRoomChangeService, RoomChangeService>();
 builder.Services.AddScoped<IMaintenanceStaffService, MaintenanceStaffService>();
 builder.Services.AddScoped<IComplaintService, ComplaintService>();
+builder.Services.AddScoped<IMessMenuService, MessMenuService>();
+builder.Services.AddScoped<IMealSelectionService, MealSelectionService>();
+builder.Services.AddScoped<IFeedbackService, FeedbackService>();
+builder.Services.AddScoped<IAnnouncementService, AnnouncementService>();
+builder.Services.AddScoped<IAdminDashboardService, AdminDashboardService>();
 
 // Add services to the container.
 builder.Services.AddControllersWithViews();

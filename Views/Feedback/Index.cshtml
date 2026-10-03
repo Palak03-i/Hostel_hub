@@ -1,0 +1,40 @@
+﻿@model List<Hostel_hub.Models.Feedback>
+
+<h2>All Feedback</h2>
+
+<form method="get" class="mb-3">
+    <label>Filter by source:</label>
+    <select name="source" class="form-control w-auto d-inline-block" onchange="this.form.submit()">
+        <option value="">All</option>
+        @foreach (var s in Enum.GetValues(typeof(Hostel_hub.Models.FeedbackSource)))
+        {
+            <option value="@s" selected="@(ViewBag.SelectedSource?.ToString() == s.ToString())">@s</option>
+        }
+    </select>
+</form>
+
+@if (!Model.Any())
+{
+    <p>No feedback found.</p>
+}
+else
+{
+    <table class="table table-striped">
+        <thead>
+            <tr><th>Student</th><th>Source</th><th>Related Complaint</th><th>Rating</th><th>Comments</th><th>Submitted</th></tr>
+        </thead>
+        <tbody>
+            @foreach (var f in Model)
+            {
+                <tr>
+                    <td>@f.Student?.FullName</td>
+                    <td>@f.Source</td>
+                    <td>@(f.Complaint?.Title ?? "-")</td>
+                    <td>@f.Rating / 5</td>
+                    <td>@f.Comments</td>
+                    <td>@f.SubmittedAt.ToString("g")</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}

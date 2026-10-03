@@ -1,0 +1,30 @@
+﻿@model List<Hostel_hub.Models.Feedback>
+
+<h2>My Feedback</h2>
+
+<a asp-action="SubmitFeedback" class="btn btn-primary mb-3">+ Submit Feedback</a>
+
+@if (!Model.Any())
+{
+    <p>You haven't submitted any feedback yet.</p>
+}
+else
+{
+    <table class="table table-striped">
+        <thead>
+            <tr><th>Source</th><th>Related Complaint</th><th>Rating</th><th>Comments</th><th>Submitted</th></tr>
+        </thead>
+        <tbody>
+            @foreach (var f in Model)
+            {
+                <tr>
+                    <td>@f.Source</td>
+                    <td>@(f.Complaint?.Title ?? "-")</td>
+                    <td>@f.Rating / 5</td>
+                    <td>@f.Comments</td>
+                    <td>@f.SubmittedAt.ToString("g")</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}

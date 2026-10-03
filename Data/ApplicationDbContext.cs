@@ -40,8 +40,24 @@ namespace Hostel_hub.Data
                 .IsUnique();
 
             modelBuilder.Entity<Feedback>()
-                .HasIndex(f => f.ComplaintId)
-                .IsUnique();
+                .HasOne(f => f.Student)
+                .WithMany()
+                .HasForeignKey(f => f.StudentId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<Feedback>()
+                .HasOne(f => f.Complaint)
+                .WithMany()
+                .HasForeignKey(f => f.ComplaintId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            // One feedback per student per complaint (still prevents spamming
+            // the same complaint), but this no longer applies globally since
+            // ComplaintId is null for Mess/General feedback.
+            modelBuilder.Entity<Feedback>()
+                .HasIndex(f => new { f.StudentId, f.ComplaintId })
+                .IsUnique()
+                .HasFilter("[ComplaintId] IS NOT NULL");
 
             // Delete behavior: prevent accidental cascading deletes
             // where they could silently destroy important records.
@@ -94,8 +110,8 @@ namespace Hostel_hub.Data
                 .HasForeignKey(w => w.HostelId)
                 .OnDelete(DeleteBehavior.SetNull);
             modelBuilder.Entity<MessMenu>()
-    .HasIndex(m => new { m.HostelId, m.MenuDate })
-    .IsUnique();
+                .HasIndex(m => new { m.HostelId, m.MenuDate })
+                .IsUnique();
 
             modelBuilder.Entity<MessMenu>()
                 .HasOne(m => m.Hostel)
@@ -123,6 +139,12 @@ namespace Hostel_hub.Data
                 .HasOne(s => s.MessMenu)
                 .WithMany()
                 .HasForeignKey(s => s.MessMenuId)
+                .OnDelete(DeleteBehavior.Restrict);
+            // === Announcements ===
+            modelBuilder.Entity<Announcement>()
+                .HasOne(a => a.PostedByUser)
+                .WithMany()
+                .HasForeignKey(a => a.PostedByUserId)
                 .OnDelete(DeleteBehavior.Restrict);
         }
     }

@@ -46,6 +46,15 @@
                             <li>
                                 <a class="nav-link text-dark" asp-controller="Complaints" asp-action="Index">Complaints</a>
                             </li>
+                            <li>
+                                <a class="nav-link text-dark" asp-controller="MessMenus" asp-action="Index">Manage Mess Menus</a>
+                            </li>
+                            <li>
+                                <a class="nav-link text-dark" asp-controller="Feedback" asp-action="Index">All Feedback</a>
+                            </li>   
+                            <li>
+                                <a class="nav-link text-dark" asp-controller="Announcements" asp-action="Index">Announcements</a>
+                            </li>
 
                         }
                         @if (User.IsInRole("Student"))
@@ -59,12 +68,26 @@
                             <li>
                                 <a class="nav-link text-dark" asp-controller="Student" asp-action="Complaints">Complaints</a>
                             </li>
-
+                             <li>
+                                <a class="nav-link text-dark" asp-controller="Student" asp-action="Mess">Mess Menu</a>
+                            </li>
+                            <li>
+                                <a class="nav-link text-dark" asp-controller="Student" asp-action="Feedback">Feedback</a>
+                            </li>
+                                                        <li>
+                                <a class="nav-link text-dark" asp-controller="Student" asp-action="Announcements">Announcements</a>
+                            </li>
+                                                        <li>
+                                <a class="nav-link text-dark" asp-controller="Student" asp-action="Dashboard">Dashboard</a>
+                            </li>
                         }
                         @if (User.IsInRole("MaintenanceStaff"))
                         {
                             <li class="nav-item">
                                 <a class="nav-link text-dark" asp-controller="Maintenance" asp-action="AssignedComplaints">My Complaints</a>
+                            </li>
+                                                        <li>
+                                <a class="nav-link text-dark" asp-controller="Maintenance" asp-action="Dashboard">Dashboard</a>
                             </li>
                         }
                     </ul>

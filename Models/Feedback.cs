@@ -2,12 +2,21 @@
 
 namespace Hostel_hub.Models
 {
+    public enum FeedbackSource { Complaint, Mess, General }
+
     public class Feedback
     {
         public int FeedbackId { get; set; }
 
         [Required]
-        public int ComplaintId { get; set; }
+        public int StudentId { get; set; }
+        public Student? Student { get; set; }
+
+        [Required]
+        public FeedbackSource Source { get; set; }
+
+        // Only set when Source == Complaint; null otherwise.
+        public int? ComplaintId { get; set; }
         public Complaint? Complaint { get; set; }
 
         [Required]

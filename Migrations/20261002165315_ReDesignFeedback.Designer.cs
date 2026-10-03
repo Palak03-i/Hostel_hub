@@ -4,6 +4,7 @@ using Hostel_hub.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Hostel_hub.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20261002165315_ReDesignFeedback")]
+    partial class ReDesignFeedback
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -35,23 +38,11 @@ namespace Hostel_hub.Migrations
                         .HasMaxLength(2000)
                         .HasColumnType("nvarchar(2000)");
 
-                    b.Property<DateOnly>("ExpiryDate")
-                        .HasColumnType("date");
-
-                    b.Property<bool>("IsActive")
-                        .HasColumnType("bit");
-
-                    b.Property<bool>("IsImportant")
-                        .HasColumnType("bit");
-
                     b.Property<DateTime>("PostedAt")
                         .HasColumnType("datetime2");
 
                     b.Property<int>("PostedByUserId")
                         .HasColumnType("int");
-
-                    b.Property<DateOnly>("PublishDate")
-                        .HasColumnType("date");
 
                     b.Property<string>("Title")
                         .IsRequired()
@@ -524,7 +515,7 @@ namespace Hostel_hub.Migrations
                     b.HasOne("Hostel_hub.Models.User", "PostedByUser")
                         .WithMany()
                         .HasForeignKey("PostedByUserId")
-                        .OnDelete(DeleteBehavior.Restrict)
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.Navigation("PostedByUser");
