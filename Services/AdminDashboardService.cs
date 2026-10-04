@@ -77,8 +77,15 @@ namespace Hostel_hub.Services
             model.TodayDinnerTaking = mealCounts.FirstOrDefault(m => m.Key == MealType.Dinner)?.Count ?? 0;
 
             // --- Announcements (not hostel-scoped, same as the Feedback module) ---
-            model.ActiveAnnouncementsCount = await _context.Announcements
-                .CountAsync(a => a.IsActive && a.PublishDate <= today && a.ExpiryDate >= today);
+            var announcementsQuery = _context.Announcements
+                .Where(a => a.IsActive && a.PublishDate <= today && a.ExpiryDate >= today);
+                 if (scopedHostelId.HasValue)
+                 {
+                      announcementsQuery = announcementsQuery
+                      .Where(a => a.HostelId == null || a.HostelId == scopedHostelId.Value);
+                 }
+
+            model.ActiveAnnouncementsCount =await announcementsQuery.CountAsync();
 
             return model;
         }
