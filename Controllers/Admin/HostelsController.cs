@@ -1,6 +1,8 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;
+using Hostel_hub.Data;
 using Hostel_hub.Models;
 using Hostel_hub.Services;
 using Hostel_hub.ViewModels;
@@ -13,11 +15,15 @@ namespace Hostel_hub.Controllers.Admin
     {
         private readonly IHostelService _hostelService;
         private readonly IWardenContext _wardenContext;
+        private readonly ApplicationDbContext _context;
+        private readonly IAuthService _authService;
 
-        public HostelsController(IHostelService hostelService, IWardenContext wardenContext)
+        public HostelsController(IHostelService hostelService, IWardenContext wardenContext, ApplicationDbContext context, IAuthService authService)
         {
             _hostelService = hostelService;
             _wardenContext = wardenContext;
+            _context = context;
+            _authService = authService;
         }
 
         [HttpGet("")]
@@ -51,7 +57,6 @@ namespace Hostel_hub.Controllers.Admin
             }
             return View(hostel);
         }
-
         [HttpGet("Create")]
         public async Task<IActionResult> Create()
         {
@@ -59,12 +64,15 @@ namespace Hostel_hub.Controllers.Admin
             {
                 return Forbid();
             }
-            return View();
+
+            var model = new CreateHostelWithWardenViewModel();
+
+            return View(model);
         }
 
         [HttpPost("Create")]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create(HostelViewModel model)
+        public async Task<IActionResult> Create(CreateHostelWithWardenViewModel model)
         {
             if (!await _wardenContext.IsSuperAdminAsync(GetCurrentUserId()))
             {
@@ -76,26 +84,107 @@ namespace Hostel_hub.Controllers.Admin
                 return View(model);
             }
 
-            var hostel = new Hostel { Name = model.Name, Type = model.Type };
-            await _hostelService.CreateHostelAsync(hostel);
-            return RedirectToAction("Index");
+            string normalizedEmail = model.WardenEmail.Trim().ToLowerInvariant();
+            string hostelName = model.HostelName.Trim();
+
+            bool emailExists = await _context.Users.AnyAsync(u => u.Email == normalizedEmail);
+
+            if (emailExists)
+            {
+                ModelState.AddModelError(
+                    nameof(model.WardenEmail),
+                    "This email is already registered.");
+
+                return View(model);
+            }
+
+            bool hostelExists = await _context.Hostels.AnyAsync(h => h.Name == hostelName);
+
+            if (hostelExists)
+            {
+                ModelState.AddModelError(
+                    nameof(model.HostelName),
+                    "A hostel with this name already exists.");
+
+                return View(model);
+            }
+
+            await using var transaction =
+                await _context.Database.BeginTransactionAsync();
+
+            try
+            {
+                // 1. Create Hostel
+                var hostel = new Hostel
+                {
+                    Name = hostelName,
+                    Type = model.HostelType
+                };
+
+                await _hostelService.CreateHostelAsync(hostel);
+
+                // 2. Create Warden login account
+                var user = new User
+                {
+                    Email = normalizedEmail,
+                    PasswordHash = _authService.HashPassword(model.Password),
+                    Role = UserRole.Admin
+                };
+
+                _context.Users.Add(user);
+                await _context.SaveChangesAsync();
+
+                // 3. Create Warden profile and assign hostel
+                var warden = new Warden
+                {
+                    UserId = user.UserId,
+                    FullName = model.WardenFullName.Trim(),
+                    HostelId = hostel.HostelId
+                };
+
+                _context.Wardens.Add(warden);
+                await _context.SaveChangesAsync();
+
+                await transaction.CommitAsync();
+
+                TempData["SuccessMessage"] =
+                    "Hostel and Warden account created successfully.";
+
+                return RedirectToAction("Index");
+            }
+            catch
+            {
+                await transaction.RollbackAsync();
+
+                ModelState.AddModelError(
+                    string.Empty,
+                    "Unable to create the hostel and Warden account. Please try again.");
+
+                return View(model);
+            }
         }
 
         [HttpGet("Edit/{id}")]
         public async Task<IActionResult> Edit(int id)
         {
-            if (!await CanAccessHostelAsync(id))
+            if (!await _wardenContext.IsSuperAdminAsync(GetCurrentUserId()))
             {
                 return Forbid();
             }
 
             var hostel = await _hostelService.GetHostelByIdAsync(id);
+
             if (hostel == null)
             {
                 return NotFound();
             }
 
-            var model = new HostelViewModel { Name = hostel.Name, Type = hostel.Type };
+            var model = new HostelViewModel
+            {
+                Name = hostel.Name,
+                Type = hostel.Type
+            };
+
             return View(model);
         }
 
@@ -103,7 +192,7 @@ namespace Hostel_hub.Controllers.Admin
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(int id, HostelViewModel model)
         {
-            if (!await CanAccessHostelAsync(id))
+            if (!await _wardenContext.IsSuperAdminAsync(GetCurrentUserId()))
             {
                 return Forbid();
             }
@@ -113,7 +202,11 @@ namespace Hostel_hub.Controllers.Admin
                 return View(model);
             }
 
-            bool success = await _hostelService.UpdateHostelAsync(id, model.Name, model.Type);
+            bool success = await _hostelService.UpdateHostelAsync(
+                id,
+                model.Name,
+                model.Type);
+
             if (!success)
             {
                 return NotFound();
