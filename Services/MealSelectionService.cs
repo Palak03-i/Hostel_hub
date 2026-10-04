@@ -55,7 +55,7 @@ namespace Hostel_hub.Services
                 return (false, $"{mealType} is not available for {menu.MenuDate:d}.");
             }
 
-            if (!IsWithinCutoff(menu.MenuDate, mealType, out var cutoffDateTime))
+            if (!IsMealSelectionWithinCutoff(menu.MenuDate,mealType,out var cutoffDateTime))
             {
                 return (false, $"Selection for {mealType} on {menu.MenuDate:d} closed at {cutoffDateTime:g}.");
             }
@@ -151,6 +151,28 @@ namespace Hostel_hub.Services
 
             var cutoffDate = menuDate.AddDays(-daysBefore);
             cutoffDateTime = cutoffDate.ToDateTime(TimeOnly.FromTimeSpan(cutoffTime));
+
+            return DateTime.Now <= cutoffDateTime;
+        }
+        public bool IsMealSelectionWithinCutoff(
+    DateOnly menuDate,
+    MealType mealType,
+    out DateTime cutoffDateTime)
+        {
+            int daysBefore = _configuration.GetValue<int>(
+                $"MealCutoffs:{mealType}:DaysBefore",
+                0);
+
+            string timeText =
+                _configuration[$"MealCutoffs:{mealType}:Time"] ?? "23:59";
+
+            TimeSpan.TryParse(timeText, out var cutoffTime);
+
+            var cutoffDate = menuDate.AddDays(-daysBefore);
+
+            cutoffDateTime =
+                cutoffDate.ToDateTime(
+                    TimeOnly.FromTimeSpan(cutoffTime));
 
             return DateTime.Now <= cutoffDateTime;
         }

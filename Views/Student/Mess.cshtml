@@ -15,15 +15,6 @@
     <div class="alert alert-info">@Model.NoticeMessage</div>
 }
 
-@functions {
-    bool IsMealOpen(Hostel_hub.Models.MessMenu menu, Hostel_hub.Models.MealType meal) => meal switch
-    {
-        Hostel_hub.Models.MealType.Breakfast => menu.IsBreakfastAvailable,
-        Hostel_hub.Models.MealType.Lunch => menu.IsLunchAvailable,
-        Hostel_hub.Models.MealType.Dinner => menu.IsDinnerAvailable,
-        _ => false
-    };
-}
 
 @if (Model.TomorrowMenu != null)
 {
@@ -31,7 +22,9 @@
     <p class="text-muted">Decide tonight — selection closes before tomorrow morning.</p>
 
     var meal = Hostel_hub.Models.MealType.Breakfast;
-    bool isOpen = IsMealOpen(Model.TomorrowMenu, meal);
+    bool isOpen =
+    Model.TomorrowMealOpen.TryGetValue(meal, out var open)
+    && open;
     Model.TomorrowSelections.TryGetValue(meal, out var tomorrowStatus);
 
     <div class="card mb-4">
@@ -74,9 +67,12 @@
 {
     <h4>Today's Menu — @Model.TodayMenu.MenuDate.ToString("d")</h4>
 
-    @foreach (var meal in new[] { Hostel_hub.Models.MealType.Lunch, Hostel_hub.Models.MealType.Dinner })
+
+    @foreach (var meal in new[]{Hostel_hub.Models.MealType.Breakfast,Hostel_hub.Models.MealType.Lunch,Hostel_hub.Models.MealType.Dinner})
     {
-        bool isOpen = IsMealOpen(Model.TodayMenu, meal);
+        bool isOpen =
+    Model.TodayMealOpen.TryGetValue(meal, out var open)
+    && open;
         Model.TodaySelections.TryGetValue(meal, out var status);
 
         <div class="card mb-3">

@@ -1,8 +1,9 @@
-﻿using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Mvc;
-using System.Security.Claims;
+﻿using Hostel_hub.Models;
 using Hostel_hub.Services;
 using Hostel_hub.ViewModels;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 
 namespace Hostel_hub.Controllers
 {
@@ -233,14 +234,94 @@ namespace Hostel_hub.Controllers
 
             if (model.TodayMenu != null)
             {
-                var todaySelections = await _mealSelectionService.GetSelectionsForStudentAsync(student.StudentId, model.TodayMenu.MessMenuId);
-                model.TodaySelections = todaySelections.ToDictionary(s => s.MealType, s => s.Status);
+                var todaySelections =
+                    await _mealSelectionService
+                        .GetSelectionsForStudentAsync(
+                            student.StudentId,
+                            model.TodayMenu.MessMenuId);
+
+                model.TodaySelections =
+                    todaySelections.ToDictionary(
+                        s => s.MealType,
+                        s => s.Status);
+
+                foreach (var meal in new[]
+                {
+        MealType.Breakfast,
+        MealType.Lunch,
+        MealType.Dinner
+    })
+                {
+                    bool available = meal switch
+                    {
+                        MealType.Breakfast =>
+                            model.TodayMenu.IsBreakfastAvailable,
+
+                        MealType.Lunch =>
+                            model.TodayMenu.IsLunchAvailable,
+
+                        MealType.Dinner =>
+                            model.TodayMenu.IsDinnerAvailable,
+
+                        _ => false
+                    };
+
+                    bool withinCutoff =
+                        _mealSelectionService
+                            .IsMealSelectionWithinCutoff(
+                                model.TodayMenu.MenuDate,
+                                meal,
+                                out _);
+
+                    model.TodayMealOpen[meal] =
+                        available && withinCutoff;
+                }
             }
 
             if (model.TomorrowMenu != null)
             {
-                var tomorrowSelections = await _mealSelectionService.GetSelectionsForStudentAsync(student.StudentId, model.TomorrowMenu.MessMenuId);
-                model.TomorrowSelections = tomorrowSelections.ToDictionary(s => s.MealType, s => s.Status);
+                var tomorrowSelections =
+                    await _mealSelectionService
+                        .GetSelectionsForStudentAsync(
+                            student.StudentId,
+                            model.TomorrowMenu.MessMenuId);
+
+                model.TomorrowSelections =
+                    tomorrowSelections.ToDictionary(
+                        s => s.MealType,
+                        s => s.Status);
+
+                foreach (var meal in new[]
+                {
+        MealType.Breakfast,
+        MealType.Lunch,
+        MealType.Dinner
+    })
+                {
+                    bool available = meal switch
+                    {
+                        MealType.Breakfast =>
+                            model.TomorrowMenu.IsBreakfastAvailable,
+
+                        MealType.Lunch =>
+                            model.TomorrowMenu.IsLunchAvailable,
+
+                        MealType.Dinner =>
+                            model.TomorrowMenu.IsDinnerAvailable,
+
+                        _ => false
+                    };
+
+                    bool withinCutoff =
+                        _mealSelectionService
+                            .IsMealSelectionWithinCutoff(
+                                model.TomorrowMenu.MenuDate,
+                                meal,
+                                out _);
+
+                    model.TomorrowMealOpen[meal] =
+                        available && withinCutoff;
+                }
             }
 
             return View(model);

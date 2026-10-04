@@ -8,5 +8,6 @@ namespace Hostel_hub.Services
         Task<List<MealSelection>> GetSelectionsForStudentAsync(int studentId, int menuId);
         Task<(bool Success, string? ErrorMessage)> SelectMealAsync(int studentId, int menuId, MealType mealType, MealSelectionStatus status);
         Task<MessParticipationViewModel?> GetParticipationReportAsync(int menuId);
+        bool IsMealSelectionWithinCutoff(DateOnly menuDate,MealType mealType,out DateTime cutoffDateTime);
     }
 }
