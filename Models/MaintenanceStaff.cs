@@ -17,6 +17,8 @@ namespace Hostel_hub.Models
 
         [Required]
         public int UserId { get; set; }
+        public int? HostelId { get; set; }
+        public Hostel? Hostel { get; set; }
         public User? User { get; set; }
 
         [Required]

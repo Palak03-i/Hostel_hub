@@ -52,6 +52,13 @@ namespace Hostel_hub.Controllers.Admin
         [HttpGet("Create")]
         public async Task<IActionResult> Create()
         {
+            var scopedHostelId = await _wardenContext.GetScopedHostelIdAsync(GetCurrentUserId());
+            if (!scopedHostelId.HasValue)
+            {
+                TempData["ErrorMessage"] = "Only a Warden can create rooms for their own hostel.";
+                return RedirectToAction("Index");
+            }
+
             await PopulateHostelDropdownAsync();
             return View();
         }
@@ -60,7 +67,7 @@ namespace Hostel_hub.Controllers.Admin
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(RoomViewModel model)
         {
-            if (!await CanAccessHostelAsync(model.HostelId))
+            if (!await CanManageAsync(model.HostelId))
             {
                 return Forbid();
             }
@@ -91,7 +98,7 @@ namespace Hostel_hub.Controllers.Admin
                 return NotFound();
             }
 
-            if (!await CanAccessHostelAsync(room.HostelId))
+            if (!await CanManageAsync(room.HostelId))
             {
                 return Forbid();
             }
@@ -116,7 +123,7 @@ namespace Hostel_hub.Controllers.Admin
                 return NotFound();
             }
 
-            if (!await CanAccessHostelAsync(room.HostelId))
+            if (!await CanManageAsync(room.HostelId))
             {
                 return Forbid();
             }
@@ -146,7 +153,7 @@ namespace Hostel_hub.Controllers.Admin
                 return NotFound();
             }
 
-            if (!await CanAccessHostelAsync(room.HostelId))
+            if (!await CanManageAsync(room.HostelId))
             {
                 return Forbid();
             }
@@ -179,6 +186,12 @@ namespace Hostel_hub.Controllers.Admin
             return !scopedHostelId.HasValue || scopedHostelId.Value == hostelId;
         }
 
+        private async Task<bool> CanManageAsync(int hostelId)
+        {
+            var scopedHostelId = await _wardenContext.GetScopedHostelIdAsync(GetCurrentUserId());
+            return scopedHostelId.HasValue && scopedHostelId.Value == hostelId;
+        }
+
         private int GetCurrentUserId()
         {
             string? userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
@@ -193,7 +206,7 @@ namespace Hostel_hub.Controllers.Admin
                 return NotFound();
             }
 
-            if (!await CanAccessHostelAsync(room.HostelId))
+            if (!await CanManageAsync(room.HostelId))
             {
                 return Forbid();
             }
@@ -213,7 +226,7 @@ namespace Hostel_hub.Controllers.Admin
                 return NotFound();
             }
 
-            if (!await CanAccessHostelAsync(room.HostelId))
+            if (!await CanManageAsync(room.HostelId))
             {
                 return Forbid();
             }

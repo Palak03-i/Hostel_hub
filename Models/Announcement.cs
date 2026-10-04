@@ -17,6 +17,8 @@ namespace Hostel_hub.Models
         [Required]
         public int PostedByUserId { get; set; }
         public User? PostedByUser { get; set; }
+        public int? HostelId { get; set; }
+        public Hostel? Hostel { get; set; }
 
         public DateTime PostedAt { get; set; } = DateTime.UtcNow;
 

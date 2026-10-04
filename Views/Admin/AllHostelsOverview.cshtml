@@ -1,0 +1,27 @@
+﻿@model List<Hostel_hub.ViewModels.HostelOverviewRow>
+
+<h2>All Hostels — Overview</h2>
+
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>Hostel</th>
+            <th>Students</th>
+            <th>Rooms (Total/Occupied/Full)</th>
+            <th>Complaints (Open/Resolved)</th>
+            <th>Today's Meals Taken</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var row in Model)
+        {
+            <tr>
+                <td>@row.Name</td>
+                <td>@row.TotalStudents</td>
+                <td>@row.TotalRooms / @row.OccupiedRooms / @row.FullRooms</td>
+                <td>@row.OpenComplaints / @row.ResolvedComplaints</td>
+                <td>@row.TodayMealsTaking</td>
+            </tr>
+        }
+    </tbody>
+</table>

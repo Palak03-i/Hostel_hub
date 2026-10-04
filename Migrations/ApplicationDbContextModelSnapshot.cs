@@ -38,6 +38,9 @@ namespace Hostel_hub.Migrations
                     b.Property<DateOnly>("ExpiryDate")
                         .HasColumnType("date");
 
+                    b.Property<int?>("HostelId")
+                        .HasColumnType("int");
+
                     b.Property<bool>("IsActive")
                         .HasColumnType("bit");
 
@@ -59,6 +62,8 @@ namespace Hostel_hub.Migrations
                         .HasColumnType("nvarchar(150)");
 
                     b.HasKey("AnnouncementId");
+
+                    b.HasIndex("HostelId");
 
                     b.HasIndex("PostedByUserId");
 
@@ -221,6 +226,9 @@ namespace Hostel_hub.Migrations
                         .HasMaxLength(150)
                         .HasColumnType("nvarchar(150)");
 
+                    b.Property<int?>("HostelId")
+                        .HasColumnType("int");
+
                     b.Property<string>("PhoneNumber")
                         .HasMaxLength(20)
                         .HasColumnType("nvarchar(20)");
@@ -232,6 +240,8 @@ namespace Hostel_hub.Migrations
                         .HasColumnType("int");
 
                     b.HasKey("MaintenanceStaffId");
+
+                    b.HasIndex("HostelId");
 
                     b.HasIndex("UserId");
 
@@ -521,11 +531,18 @@ namespace Hostel_hub.Migrations
 
             modelBuilder.Entity("Hostel_hub.Models.Announcement", b =>
                 {
+                    b.HasOne("Hostel_hub.Models.Hostel", "Hostel")
+                        .WithMany()
+                        .HasForeignKey("HostelId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
                     b.HasOne("Hostel_hub.Models.User", "PostedByUser")
                         .WithMany()
                         .HasForeignKey("PostedByUserId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
+
+                    b.Navigation("Hostel");
 
                     b.Navigation("PostedByUser");
                 });
@@ -578,11 +595,18 @@ namespace Hostel_hub.Migrations
 
             modelBuilder.Entity("Hostel_hub.Models.MaintenanceStaff", b =>
                 {
+                    b.HasOne("Hostel_hub.Models.Hostel", "Hostel")
+                        .WithMany()
+                        .HasForeignKey("HostelId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
                     b.HasOne("Hostel_hub.Models.User", "User")
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.Navigation("Hostel");
 
                     b.Navigation("User");
                 });

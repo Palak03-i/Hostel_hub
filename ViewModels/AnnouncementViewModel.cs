@@ -21,5 +21,9 @@ namespace Hostel_hub.ViewModels
         public DateOnly ExpiryDate { get; set; } = DateOnly.FromDateTime(DateTime.Today.AddDays(7));
 
         public bool IsImportant { get; set; }
+
+        // Only meaningful for Super Admin (chooses a hostel, or leaves null for Global).
+        // A Warden's submitted value here is ignored server-side.
+        public int? HostelId { get; set; }
     }
 }

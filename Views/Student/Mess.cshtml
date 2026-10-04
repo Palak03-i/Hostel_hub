@@ -1,0 +1,117 @@
+﻿@model Hostel_hub.ViewModels.MessOverviewViewModel
+
+<h2>Mess Menu</h2>
+
+@if (TempData["ErrorMessage"] != null)
+{
+    <div class="alert alert-danger">@TempData["ErrorMessage"]</div>
+}
+@if (TempData["SuccessMessage"] != null)
+{
+    <div class="alert alert-success">@TempData["SuccessMessage"]</div>
+}
+@if (Model.NoticeMessage != null)
+{
+    <div class="alert alert-info">@Model.NoticeMessage</div>
+}
+
+@functions {
+    bool IsMealOpen(Hostel_hub.Models.MessMenu menu, Hostel_hub.Models.MealType meal) => meal switch
+    {
+        Hostel_hub.Models.MealType.Breakfast => menu.IsBreakfastAvailable,
+        Hostel_hub.Models.MealType.Lunch => menu.IsLunchAvailable,
+        Hostel_hub.Models.MealType.Dinner => menu.IsDinnerAvailable,
+        _ => false
+    };
+}
+
+@if (Model.TomorrowMenu != null)
+{
+    <h4>Tomorrow's Breakfast — @Model.TomorrowMenu.MenuDate.ToString("d")</h4>
+    <p class="text-muted">Decide tonight — selection closes before tomorrow morning.</p>
+
+    var meal = Hostel_hub.Models.MealType.Breakfast;
+    bool isOpen = IsMealOpen(Model.TomorrowMenu, meal);
+    Model.TomorrowSelections.TryGetValue(meal, out var tomorrowStatus);
+
+    <div class="card mb-4">
+        <div class="card-header">
+            Breakfast — @(isOpen ? "Open" : "Closed")
+            @if (Model.TomorrowSelections.ContainsKey(meal))
+            {
+                <span class="badge @(tomorrowStatus == Hostel_hub.Models.MealSelectionStatus.Take ? "bg-success" : "bg-secondary")">
+                    Current: @tomorrowStatus
+                </span>
+            }
+        </div>
+        <div class="card-body">
+            <ul>
+                @foreach (var item in Model.TomorrowMenu.Items.Where(i => i.MealType == meal))
+                {
+                    <li>@item.ItemName</li>
+                }
+            </ul>
+            @if (isOpen)
+            {
+                <form asp-action="SelectMeal" method="post" class="d-inline">
+                    <input type="hidden" name="menuId" value="@Model.TomorrowMenu.MessMenuId" />
+                    <input type="hidden" name="mealType" value="@meal" />
+                    <input type="hidden" name="status" value="Take" />
+                    <button type="submit" class="btn btn-sm btn-success">Take</button>
+                </form>
+                <form asp-action="SelectMeal" method="post" class="d-inline">
+                    <input type="hidden" name="menuId" value="@Model.TomorrowMenu.MessMenuId" />
+                    <input type="hidden" name="mealType" value="@meal" />
+                    <input type="hidden" name="status" value="Skip" />
+                    <button type="submit" class="btn btn-sm btn-outline-secondary">Skip</button>
+                </form>
+            }
+        </div>
+    </div>
+}
+
+@if (Model.TodayMenu != null)
+{
+    <h4>Today's Menu — @Model.TodayMenu.MenuDate.ToString("d")</h4>
+
+    @foreach (var meal in new[] { Hostel_hub.Models.MealType.Lunch, Hostel_hub.Models.MealType.Dinner })
+    {
+        bool isOpen = IsMealOpen(Model.TodayMenu, meal);
+        Model.TodaySelections.TryGetValue(meal, out var status);
+
+        <div class="card mb-3">
+            <div class="card-header">
+                @meal — @(isOpen ? "Open" : "Closed")
+                @if (Model.TodaySelections.ContainsKey(meal))
+                {
+                    <span class="badge @(status == Hostel_hub.Models.MealSelectionStatus.Take ? "bg-success" : "bg-secondary")">
+                        Current: @status
+                    </span>
+                }
+            </div>
+            <div class="card-body">
+                <ul>
+                    @foreach (var item in Model.TodayMenu.Items.Where(i => i.MealType == meal))
+                    {
+                        <li>@item.ItemName</li>
+                    }
+                </ul>
+                @if (isOpen)
+                {
+                    <form asp-action="SelectMeal" method="post" class="d-inline">
+                        <input type="hidden" name="menuId" value="@Model.TodayMenu.MessMenuId" />
+                        <input type="hidden" name="mealType" value="@meal" />
+                        <input type="hidden" name="status" value="Take" />
+                        <button type="submit" class="btn btn-sm btn-success">Take</button>
+                    </form>
+                    <form asp-action="SelectMeal" method="post" class="d-inline">
+                        <input type="hidden" name="menuId" value="@Model.TodayMenu.MessMenuId" />
+                        <input type="hidden" name="mealType" value="@meal" />
+                        <input type="hidden" name="status" value="Skip" />
+                        <button type="submit" class="btn btn-sm btn-outline-secondary">Skip</button>
+                    </form>
+                }
+            </div>
+        </div>
+    }
+}

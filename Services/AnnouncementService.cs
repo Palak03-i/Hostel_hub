@@ -13,29 +13,38 @@ namespace Hostel_hub.Services
             _context = context;
         }
 
-        public async Task<List<Announcement>> GetActiveAnnouncementsAsync()
+        public async Task<List<Announcement>> GetActiveAnnouncementsAsync(int? hostelId)
         {
             var today = DateOnly.FromDateTime(DateTime.Today);
 
             return await _context.Announcements
                 .Where(a => a.IsActive && a.PublishDate <= today && a.ExpiryDate >= today)
+                .Where(a => a.HostelId == null || (hostelId.HasValue && a.HostelId == hostelId.Value))
                 .OrderByDescending(a => a.IsImportant)
                 .ThenByDescending(a => a.PublishDate)
                 .ToListAsync();
         }
 
-        public async Task<List<Announcement>> GetAllAnnouncementsAsync()
+        public async Task<List<Announcement>> GetAllAnnouncementsAsync(int? scopedHostelId)
         {
-            return await _context.Announcements
+            IQueryable<Announcement> query = _context.Announcements
                 .Include(a => a.PostedByUser)
-                .OrderByDescending(a => a.PostedAt)
-                .ToListAsync();
-        }
+                .Include(a => a.Hostel);
 
+            if (scopedHostelId.HasValue)
+            {
+                // Warden: see their own hostel's announcements plus global ones.
+                query = query.Where(a => a.HostelId == scopedHostelId.Value || a.HostelId == null);
+            }
+            // Super Admin (scopedHostelId == null): sees everything, no filter.
+
+            return await query.OrderByDescending(a => a.PostedAt).ToListAsync();
+        }
         public async Task<Announcement?> GetByIdAsync(int announcementId)
         {
             return await _context.Announcements
                 .Include(a => a.PostedByUser)
+                .Include(a => a.Hostel)
                 .FirstOrDefaultAsync(a => a.AnnouncementId == announcementId);
         }
 

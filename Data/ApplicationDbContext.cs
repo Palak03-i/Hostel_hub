@@ -146,6 +146,18 @@ namespace Hostel_hub.Data
                 .WithMany()
                 .HasForeignKey(a => a.PostedByUserId)
                 .OnDelete(DeleteBehavior.Restrict);
+            // === Maintenance Staff ===
+            modelBuilder.Entity<MaintenanceStaff>()
+                .HasOne(m => m.Hostel)
+                .WithMany()
+                .HasForeignKey(m => m.HostelId)
+                .OnDelete(DeleteBehavior.Restrict);
+            // === Announcements ===
+            modelBuilder.Entity<Announcement>()
+                .HasOne(a => a.Hostel)
+                .WithMany()
+                .HasForeignKey(a => a.HostelId)
+                .OnDelete(DeleteBehavior.Restrict);
         }
     }
 }

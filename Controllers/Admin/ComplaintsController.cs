@@ -36,8 +36,13 @@ namespace Hostel_hub.Controllers.Admin
             var complaint = await _complaintService.GetComplaintByIdAsync(id);
             if (complaint == null) return NotFound();
 
+            if (!await CanAccessHostelAsync(complaint.Student!.HostelId))
+            {
+                return Forbid();
+            }
+
             ViewBag.History = await _complaintService.GetHistoryAsync(id);
-            ViewBag.StaffList = await _staffService.GetAllAsync(null);
+            ViewBag.StaffList = await _staffService.GetAllAsync(null, complaint.Student!.HostelId);
             return View(complaint);
         }
 
@@ -45,6 +50,14 @@ namespace Hostel_hub.Controllers.Admin
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> SetPriority(int id, ComplaintPriority priority)
         {
+            var complaint = await _complaintService.GetComplaintByIdAsync(id);
+            if (complaint == null) return NotFound();
+
+            if (!await CanManageAsync(complaint.Student!.HostelId))
+            {
+                return Forbid();
+            }
+
             var (success, error) = await _complaintService.SetPriorityAsync(id, priority, "Admin");
             if (!success) TempData["ErrorMessage"] = error;
             return RedirectToAction("Details", new { id });
@@ -54,9 +67,34 @@ namespace Hostel_hub.Controllers.Admin
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Assign(int id, int staffId)
         {
+            var complaint = await _complaintService.GetComplaintByIdAsync(id);
+            if (complaint == null) return NotFound();
+
+            if (!await CanManageAsync(complaint.Student!.HostelId))
+            {
+                return Forbid();
+            }
+
             var (success, error) = await _complaintService.AssignStaffAsync(id, staffId, "Admin");
             if (!success) TempData["ErrorMessage"] = error;
             return RedirectToAction("Details", new { id });
+        }
+
+        private async Task<bool> CanAccessHostelAsync(int? hostelId)
+        {
+            if (!hostelId.HasValue) return false;
+
+            var scopedHostelId = await _wardenContext.GetScopedHostelIdAsync(GetCurrentUserId());
+            return !scopedHostelId.HasValue || scopedHostelId.Value == hostelId.Value;
+        }
+
+
+        private async Task<bool> CanManageAsync(int? hostelId)
+        {
+            if (!hostelId.HasValue) return false;
+
+            var scopedHostelId = await _wardenContext.GetScopedHostelIdAsync(GetCurrentUserId());
+            return scopedHostelId.HasValue && scopedHostelId.Value == hostelId.Value;
         }
 
         private int GetCurrentUserId()

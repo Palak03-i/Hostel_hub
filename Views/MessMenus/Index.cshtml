@@ -1,0 +1,55 @@
+﻿@model List<Hostel_hub.Models.MessMenu>
+
+<h2>Manage Mess Menus</h2>
+
+@if (TempData["ErrorMessage"] != null)
+{
+    <div class="alert alert-danger">@TempData["ErrorMessage"]</div>
+}
+@if (TempData["InfoMessage"] != null)
+{
+    <div class="alert alert-info">@TempData["InfoMessage"]</div>
+}
+
+<a asp-action="Create" class="btn btn-primary mb-3">+ Create Menu</a>
+
+@if (!Model.Any())
+{
+    <p>No menus found.</p>
+}
+else
+{
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Hostel</th>
+                <th>Date</th>
+                <th>Breakfast</th>
+                <th>Lunch</th>
+                <th>Dinner</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var menu in Model)
+            {
+                <tr>
+                    <td>@menu.Hostel?.Name</td>
+                    <td>@menu.MenuDate.ToString("d")</td>
+                    <td>@(menu.IsBreakfastAvailable ? "Open" : "Closed")</td>
+                    <td>@(menu.IsLunchAvailable ? "Open" : "Closed")</td>
+                    <td>@(menu.IsDinnerAvailable ? "Open" : "Closed")</td>
+                    <td>
+                        <a asp-action="Details" asp-route-id="@menu.MessMenuId" class="btn btn-sm btn-secondary">View</a>
+                        <a asp-action="Details" asp-route-id="@menu.MessMenuId" class="btn btn-sm btn-secondary">View</a>
+                        <a asp-action="Participation" asp-route-id="@menu.MessMenuId" class="btn btn-sm btn-info">Participation</a>
+                        <a asp-action="Edit" asp-route-id="@menu.MessMenuId" class="btn btn-sm btn-primary">Edit</a>
+                        <form asp-action="Delete" asp-route-id="@menu.MessMenuId" method="post" class="d-inline">
+                            <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Delete this menu?');">Delete</button>
+                        </form>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}

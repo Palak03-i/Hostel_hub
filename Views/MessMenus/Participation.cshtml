@@ -1,0 +1,44 @@
+﻿@model Hostel_hub.ViewModels.MessParticipationViewModel
+
+<h2>Meal Participation</h2>
+
+<p>
+    <strong>Hostel:</strong> @Model.HostelName<br />
+    <strong>Date:</strong> @Model.MenuDate.ToString("d")<br />
+    <strong>Total students in hostel:</strong> @Model.TotalStudents
+</p>
+
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>Meal</th>
+            <th>Status</th>
+            <th>Taking</th>
+            <th>Skipping</th>
+            <th>No response</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var row in Model.Rows)
+        {
+            <tr>
+                <td>@row.MealType</td>
+                <td>
+                    @if (row.IsAvailable)
+                    {
+                        <span class="badge bg-success">Open</span>
+                    }
+                    else
+                    {
+                        <span class="badge bg-secondary">Closed</span>
+                    }
+                </td>
+                <td><strong>@row.Taking</strong></td>
+                <td>@row.Skipping</td>
+                <td>@row.NoResponse</td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+<a asp-action="Index" class="btn btn-secondary">Back to List</a>

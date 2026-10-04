@@ -1,0 +1,50 @@
+﻿@model Hostel_hub.ViewModels.MessMenuViewModel
+
+<h2>Edit Mess Menu</h2>
+
+<form asp-action="Edit" asp-route-id="@ViewBag.MenuId" method="post">
+    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+    <input type="hidden" asp-for="HostelId" />
+    <input type="hidden" asp-for="MenuDate" />
+
+    <div class="form-group mb-3">
+        <label>Hostel</label>
+        <input value="@(((List<Hostel_hub.Models.Hostel>)ViewBag.Hostels).FirstOrDefault(h => h.HostelId == Model.HostelId)?.Name)" class="form-control" disabled />
+    </div>
+
+    <div class="form-group mb-3">
+        <label>Date</label>
+        <input value="@Model.MenuDate.ToString("d")" class="form-control" disabled />
+    </div>
+
+    <div class="form-check mb-2">
+        <input asp-for="IsBreakfastAvailable" class="form-check-input" />
+        <label asp-for="IsBreakfastAvailable" class="form-check-label">Breakfast available</label>
+    </div>
+    <div class="form-group mb-3">
+        <label asp-for="BreakfastItemsText"></label>
+        <textarea asp-for="BreakfastItemsText" class="form-control" rows="3"></textarea>
+    </div>
+
+    <div class="form-check mb-2">
+        <input asp-for="IsLunchAvailable" class="form-check-input" />
+        <label asp-for="IsLunchAvailable" class="form-check-label">Lunch available</label>
+    </div>
+    <div class="form-group mb-3">
+        <label asp-for="LunchItemsText"></label>
+        <textarea asp-for="LunchItemsText" class="form-control" rows="3"></textarea>
+    </div>
+
+    <div class="form-check mb-2">
+        <input asp-for="IsDinnerAvailable" class="form-check-input" />
+        <label asp-for="IsDinnerAvailable" class="form-check-label">Dinner available</label>
+    </div>
+    <div class="form-group mb-3">
+        <label asp-for="DinnerItemsText"></label>
+        <textarea asp-for="DinnerItemsText" class="form-control" rows="3"></textarea>
+    </div>
+
+    <button type="submit" class="btn btn-primary">Save</button>
+    <a asp-action="Index" class="btn btn-secondary">Cancel</a>
+</form>

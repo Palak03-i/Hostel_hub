@@ -30,7 +30,7 @@ namespace Hostel_hub.Controllers.Admin
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Approve(int id)
         {
-            if (!await CanAccessRequestAsync(id))
+            if (!await CanManageRequestAsync(id))
             {
                 return Forbid();
             }
@@ -52,7 +52,7 @@ namespace Hostel_hub.Controllers.Admin
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Reject(int id)
         {
-            if (!await CanAccessRequestAsync(id))
+            if (!await CanManageRequestAsync(id))
             {
                 return Forbid();
             }
@@ -70,7 +70,7 @@ namespace Hostel_hub.Controllers.Admin
             return RedirectToAction("Index");
         }
 
-        private async Task<bool> CanAccessRequestAsync(int requestId)
+        private async Task<bool> CanManageRequestAsync(int requestId)
         {
             var request = await _roomChangeService.GetRequestByIdAsync(requestId);
             if (request == null || request.RequestedRoom == null)
@@ -79,7 +79,7 @@ namespace Hostel_hub.Controllers.Admin
             }
 
             var scopedHostelId = await _wardenContext.GetScopedHostelIdAsync(GetCurrentUserId());
-            return !scopedHostelId.HasValue || scopedHostelId.Value == request.RequestedRoom.HostelId;
+            return scopedHostelId.HasValue && scopedHostelId.Value == request.RequestedRoom.HostelId;
         }
 
         private int GetCurrentUserId()

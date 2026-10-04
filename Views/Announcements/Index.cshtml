@@ -11,13 +11,14 @@
 
 <table class="table table-striped">
     <thead>
-        <tr><th>Title</th><th>Publish</th><th>Expiry</th><th>Important</th><th>Status</th><th></th></tr>
+        <tr><th>Title</th><th>Hostel</th><th>Publish</th><th>Expiry</th><th>Important</th><th>Status</th><th></th></tr>
     </thead>
     <tbody>
         @foreach (var a in Model)
         {
             <tr>
                 <td>@a.Title</td>
+                <td>@(a.HostelId.HasValue ? a.Hostel?.Name : "Global (All Hostels)")</td>
                 <td>@a.PublishDate.ToString("d")</td>
                 <td>@a.ExpiryDate.ToString("d")</td>
                 <td>@(a.IsImportant ? "Yes" : "No")</td>

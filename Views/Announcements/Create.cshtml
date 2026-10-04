@@ -17,6 +17,24 @@
         <span asp-validation-for="Content" class="text-danger"></span>
     </div>
 
+    @if (ViewBag.IsSuperAdmin == true)
+    {
+        <div class="form-group mb-3">
+            <label asp-for="HostelId">Post to</label>
+            <select asp-for="HostelId" class="form-control">
+                <option value="">-- Global (All Hostels) --</option>
+                @foreach (var h in (List<Hostel_hub.Models.Hostel>)ViewBag.Hostels)
+                {
+                    <option value="@h.HostelId">@h.Name</option>
+                }
+            </select>
+        </div>
+    }
+    else
+    {
+        <p class="text-muted">This will be posted for your own hostel.</p>
+    }
+
     <div class="form-group mb-3">
         <label asp-for="PublishDate"></label>
         <input asp-for="PublishDate" class="form-control" />

@@ -82,5 +82,66 @@ namespace Hostel_hub.Services
 
             return model;
         }
+        public async Task<List<HostelOverviewRow>> GetAllHostelsOverviewAsync()
+        {
+            var hostels = await _context.Hostels.ToListAsync();
+
+            // Grouped per-hostel queries — a constant number of round trips
+            // regardless of how many hostels exist, instead of looping and
+            // querying once per hostel (which would be an N+1 pattern).
+            var studentCounts = await _context.Students
+                .Where(s => s.HostelId != null)
+                .GroupBy(s => s.HostelId)
+                .Select(g => new { HostelId = g.Key!.Value, Count = g.Count() })
+                .ToListAsync();
+
+            var roomStats = await _context.Rooms
+                .GroupBy(r => r.HostelId)
+                .Select(g => new
+                {
+                    HostelId = g.Key,
+                    Total = g.Count(),
+                    Full = g.Count(r => r.CurrentOccupancy >= r.Capacity),
+                    Occupied = g.Count(r => r.CurrentOccupancy > 0)
+                })
+                .ToListAsync();
+
+            var complaintStats = await _context.Complaints
+                .Where(c => c.Student!.HostelId != null)
+                .GroupBy(c => c.Student!.HostelId)
+                .Select(g => new
+                {
+                    HostelId = g.Key!.Value,
+                    Open = g.Count(c => c.Status != ComplaintStatus.Resolved),
+                    Resolved = g.Count(c => c.Status == ComplaintStatus.Resolved)
+                })
+                .ToListAsync();
+
+            var today = DateOnly.FromDateTime(DateTime.Today);
+            var todayMenus = await _context.MessMenus
+                .Where(m => m.MenuDate == today)
+                .ToListAsync();
+            var menuIdToHostel = todayMenus.ToDictionary(m => m.MessMenuId, m => m.HostelId);
+            var menuIds = todayMenus.Select(m => m.MessMenuId).ToList();
+
+            var takeCountsByHostel = (await _context.MealSelections
+                    .Where(s => menuIds.Contains(s.MessMenuId) && s.Status == MealSelectionStatus.Take)
+                    .ToListAsync())
+                .GroupBy(s => menuIdToHostel[s.MessMenuId])
+                .ToDictionary(g => g.Key, g => g.Count());
+
+            return hostels.Select(h => new HostelOverviewRow
+            {
+                HostelId = h.HostelId,
+                Name = h.Name,
+                TotalStudents = studentCounts.FirstOrDefault(s => s.HostelId == h.HostelId)?.Count ?? 0,
+                TotalRooms = roomStats.FirstOrDefault(r => r.HostelId == h.HostelId)?.Total ?? 0,
+                OccupiedRooms = roomStats.FirstOrDefault(r => r.HostelId == h.HostelId)?.Occupied ?? 0,
+                FullRooms = roomStats.FirstOrDefault(r => r.HostelId == h.HostelId)?.Full ?? 0,
+                OpenComplaints = complaintStats.FirstOrDefault(c => c.HostelId == h.HostelId)?.Open ?? 0,
+                ResolvedComplaints = complaintStats.FirstOrDefault(c => c.HostelId == h.HostelId)?.Resolved ?? 0,
+                TodayMealsTaking = takeCountsByHostel.TryGetValue(h.HostelId, out var count) ? count : 0
+            }).ToList();
+        }
     }
 }

@@ -24,7 +24,20 @@ namespace Hostel_hub.Controllers
             var model = await _dashboardService.GetDashboardAsync(scopedHostelId);
             return View(model);
         }
+        public async Task<IActionResult> AllHostelsOverview()
+        {
+            int userId = GetCurrentUserId();
+            var scopedHostelId = await _wardenContext.GetScopedHostelIdAsync(userId);
 
+            if (scopedHostelId.HasValue)
+            {
+                TempData["ErrorMessage"] = "This overview is only available to the Super Admin.";
+                return RedirectToAction("Dashboard");
+            }
+
+            var rows = await _dashboardService.GetAllHostelsOverviewAsync();
+            return View(rows);
+        }
         private int GetCurrentUserId()
         {
             string? userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;

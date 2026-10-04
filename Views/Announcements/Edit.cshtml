@@ -2,6 +2,8 @@
 
 <h2>Edit Announcement</h2>
 
+<p class="text-muted">Posted for: <strong>@ViewBag.HostelLabel</strong></p>
+
 <form asp-action="Edit" asp-route-id="@ViewBag.AnnouncementId" method="post">
     <div asp-validation-summary="ModelOnly" class="text-danger"></div>
 

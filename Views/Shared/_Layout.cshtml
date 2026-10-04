@@ -1,4 +1,7 @@
-﻿<!DOCTYPE html>
+﻿@using Hostel_hub.Services
+@inject IWardenContext WardenContext
+
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="utf-8" />
@@ -22,12 +25,20 @@
                         <li class="nav-item">
                             <a class="nav-link text-dark" asp-controller="Home" asp-action="Index">Home</a>
                         </li>
-
                         @if (User.IsInRole("Admin"))
                         {
+                            int navUserId = int.Parse(User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)!.Value);
+                            int? navScopedHostelId = await WardenContext.GetScopedHostelIdAsync(navUserId);
+
                             <li class="nav-item">
                                 <a class="nav-link text-dark" asp-controller="Admin" asp-action="Dashboard">Admin Dashboard</a>
                             </li>
+                            @if (!navScopedHostelId.HasValue)
+                            {
+                                <li class="nav-item">
+                                    <a class="nav-link text-dark" asp-controller="Admin" asp-action="AllHostelsOverview">All Hostels Overview</a>
+                                </li>
+                            }
                             <li class="nav-item">
                                 <a class="nav-link text-dark" asp-controller="Students" asp-action="Index" asp-route-search="" asp-area="">Manage Students</a>
                             </li>
@@ -94,8 +105,15 @@
                     <ul class="navbar-nav">
                         @if (User.Identity != null && User.Identity.IsAuthenticated)
                         {
+                            string roleLabel = User.FindFirst(System.Security.Claims.ClaimTypes.Role)?.Value ?? "";
+                            if (roleLabel == "Admin")
+                            {
+                                int greetingUserId = int.Parse(User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)!.Value);
+                                int? greetingScopedHostelId = await WardenContext.GetScopedHostelIdAsync(greetingUserId);
+                                roleLabel = greetingScopedHostelId.HasValue ? "Warden" : "Super Admin";
+                            }
                             <li class="nav-item">
-                                <span class="nav-link text-dark">Hello, @User.Identity.Name (@User.FindFirst(System.Security.Claims.ClaimTypes.Role)?.Value)</span>
+                                <span class="nav-link text-dark">Hello, @User.Identity.Name (@roleLabel)</span>
                             </li>
                             <li class="nav-item">
                                 <form asp-controller="Account" asp-action="Logout" method="post" class="form-inline">

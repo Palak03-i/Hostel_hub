@@ -22,7 +22,7 @@ namespace Hostel_hub.Services
                 .ToListAsync();
         }
 
-        public async Task<List<Feedback>> GetAllFeedbackAsync(FeedbackSource? source)
+        public async Task<List<Feedback>> GetAllFeedbackAsync(FeedbackSource? source, int? scopedHostelId)
         {
             IQueryable<Feedback> query = _context.Feedbacks
                 .Include(f => f.Student)
@@ -31,6 +31,11 @@ namespace Hostel_hub.Services
             if (source.HasValue)
             {
                 query = query.Where(f => f.Source == source.Value);
+            }
+
+            if (scopedHostelId.HasValue)
+            {
+                query = query.Where(f => f.Student!.HostelId == scopedHostelId.Value);
             }
 
             return await query.OrderByDescending(f => f.SubmittedAt).ToListAsync();

@@ -326,7 +326,10 @@ namespace Hostel_hub.Controllers
         [HttpGet]
         public async Task<IActionResult> Announcements()
         {
-            var announcements = await _announcementService.GetActiveAnnouncementsAsync();
+            var student = await _studentService.GetProfileByUserIdAsync(GetCurrentUserId());
+            if (student == null) return NotFound();
+
+            var announcements = await _announcementService.GetActiveAnnouncementsAsync(student.HostelId);
             return View(announcements);
         }
         [HttpGet]
@@ -364,7 +367,7 @@ namespace Hostel_hub.Controllers
                 .OrderByDescending(c => c.CreatedAt)
                 .FirstOrDefault();
 
-            model.RecentAnnouncements = (await _announcementService.GetActiveAnnouncementsAsync())
+            model.RecentAnnouncements = (await _announcementService.GetActiveAnnouncementsAsync(student.HostelId))
                 .Take(5)
                 .ToList();
 

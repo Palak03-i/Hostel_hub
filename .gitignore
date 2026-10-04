@@ -362,4 +362,9 @@
 		# Fody - auto-generated XML schema
 		FodyWeavers.xsd
 		# User-specific project file
-		*.csproj.user
+		*.csproj.user.vs/
+bin/
+obj/
+.vs/
+bin/
+obj/

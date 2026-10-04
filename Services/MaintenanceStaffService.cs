@@ -15,13 +15,20 @@ namespace Hostel_hub.Services
             _authService = authService;
         }
 
-        public async Task<List<MaintenanceStaff>> GetAllAsync(string? search)
+        public async Task<List<MaintenanceStaff>> GetAllAsync(string? search, int? hostelId)
         {
-            IQueryable<MaintenanceStaff> query = _context.MaintenanceStaff.Include(m => m.User);
+            IQueryable<MaintenanceStaff> query = _context.MaintenanceStaff
+                .Include(m => m.User)
+                .Include(m => m.Hostel);
 
             if (!string.IsNullOrWhiteSpace(search))
             {
                 query = query.Where(m => m.FullName.Contains(search));
+            }
+
+            if (hostelId.HasValue)
+            {
+                query = query.Where(m => m.HostelId == hostelId.Value);
             }
 
             return await query.OrderBy(m => m.FullName).ToListAsync();
@@ -29,10 +36,13 @@ namespace Hostel_hub.Services
 
         public async Task<MaintenanceStaff?> GetByIdAsync(int staffId)
         {
-            return await _context.MaintenanceStaff.Include(m => m.User).FirstOrDefaultAsync(m => m.MaintenanceStaffId == staffId);
+            return await _context.MaintenanceStaff
+                .Include(m => m.User)
+                .Include(m => m.Hostel)
+                .FirstOrDefaultAsync(m => m.MaintenanceStaffId == staffId);
         }
 
-        public async Task<(bool Success, string? ErrorMessage)> CreateAsync(string email, string password, string fullName, string? phoneNumber, StaffSpecialization specialization)
+        public async Task<(bool Success, string? ErrorMessage)> CreateAsync(string email, string password, string fullName, string? phoneNumber, StaffSpecialization specialization, int hostelId)
         {
             bool emailExists = await _context.Users.AnyAsync(u => u.Email == email);
             if (emailExists)
@@ -52,6 +62,7 @@ namespace Hostel_hub.Services
             var staff = new MaintenanceStaff
             {
                 UserId = user.UserId,
+                HostelId = hostelId,
                 FullName = fullName,
                 PhoneNumber = phoneNumber,
                 Specialization = specialization
