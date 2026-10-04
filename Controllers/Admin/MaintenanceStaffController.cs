@@ -12,20 +12,42 @@ namespace Hostel_hub.Controllers.Admin
     {
         private readonly IMaintenanceStaffService _staffService;
         private readonly IWardenContext _wardenContext;
+        private readonly IWardenService _wardenService;
 
-        public MaintenanceStaffController(IMaintenanceStaffService staffService, IWardenContext wardenContext)
+        public MaintenanceStaffController(IMaintenanceStaffService staffService, IWardenContext wardenContext, IWardenService wardenService)
         {
             _staffService = staffService;
             _wardenContext = wardenContext;
+            _wardenService = wardenService;
         }
 
         [HttpGet("")]
         public async Task<IActionResult> Index(string? search)
         {
-            var scopedHostelId = await _wardenContext.GetScopedHostelIdAsync(GetCurrentUserId());
-            // Super Admin (scopedHostelId == null) sees every staff member, read-only.
-            // A Warden sees only their own hostel's staff.
-            return View(await _staffService.GetAllAsync(search, scopedHostelId));
+            var userId = GetCurrentUserId();
+
+            var scopedHostelId =
+                await _wardenContext.GetScopedHostelIdAsync(userId);
+
+            bool isSuperAdmin = !scopedHostelId.HasValue;
+
+            var model = new StaffManagementViewModel
+            {
+                IsSuperAdmin = isSuperAdmin,
+
+                MaintenanceStaff =
+                    await _staffService.GetAllAsync(
+                        search,
+                        scopedHostelId)
+            };
+
+            if (isSuperAdmin)
+            {
+                model.Wardens =
+                    await _wardenService.GetAllAsync();
+            }
+
+            return View(model);
         }
 
         [HttpGet("Create")]

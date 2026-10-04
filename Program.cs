@@ -20,6 +20,7 @@ builder.Services.AddScoped<IMealSelectionService, MealSelectionService>();
 builder.Services.AddScoped<IFeedbackService, FeedbackService>();
 builder.Services.AddScoped<IAnnouncementService, AnnouncementService>();
 builder.Services.AddScoped<IAdminDashboardService, AdminDashboardService>();
+builder.Services.AddScoped<IWardenService, WardenService>();
 
 
 

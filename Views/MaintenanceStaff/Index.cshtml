@@ -1,22 +1,82 @@
-﻿@model List<Hostel_hub.Models.MaintenanceStaff>
+﻿@model Hostel_hub.ViewModels.StaffManagementViewModel
 
-<h2>Manage Maintenance Staff</h2>
+<h2>Manage Staff</h2>
 
 @if (TempData["ErrorMessage"] != null)
 {
-    <div class="alert alert-danger">@TempData["ErrorMessage"]</div>
+    <div class="alert alert-danger">
+        @TempData["ErrorMessage"]
+    </div>
 }
 
-<a asp-action="Create" class="btn btn-primary mb-3">+ Add Staff</a>
+@if (!Model.IsSuperAdmin)
+{
+    <a asp-action="Create"
+       class="btn btn-primary mb-3">
+        + Add Maintenance Staff
+    </a>
+}
 
-<form method="get" class="mb-3 d-flex gap-2">
-    <input type="text" name="search" class="form-control w-auto" placeholder="Search by name" />
-    <button type="submit" class="btn btn-secondary">Search</button>
+@if (Model.IsSuperAdmin)
+{
+    <h4 class="mt-4">Wardens</h4>
+
+    @if (!Model.Wardens.Any())
+    {
+        <p>No Wardens found.</p>
+    }
+    else
+    {
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Email</th>
+                    <th>Assigned Hostel</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                @foreach (var warden in Model.Wardens)
+                {
+                    <tr>
+                        <td>@warden.FullName</td>
+
+                        <td>
+                            @(warden.User?.Email ?? "N/A")
+                        </td>
+
+                        <td>
+                            @(warden.Hostel?.Name ?? "Unassigned")
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    }
+
+    <hr class="my-4" />
+}
+
+<h4>Maintenance Staff</h4>
+
+<form method="get"
+      class="mb-3 d-flex gap-2">
+
+    <input type="text"
+           name="search"
+           class="form-control w-auto"
+           placeholder="Search by name" />
+
+    <button type="submit"
+            class="btn btn-secondary">
+        Search
+    </button>
 </form>
 
-@if (!Model.Any())
+@if (!Model.MaintenanceStaff.Any())
 {
-    <p>No staff found.</p>
+    <p>No maintenance staff found.</p>
 }
 else
 {
@@ -28,21 +88,46 @@ else
                 <th>Phone</th>
                 <th>Specialization</th>
                 <th>Hostel</th>
-                <th></th>
+
+                @if (!Model.IsSuperAdmin)
+                {
+                    <th>Action</th>
+                }
             </tr>
         </thead>
+
         <tbody>
-            @foreach (var staff in Model)
+            @foreach (var staff in Model.MaintenanceStaff)
             {
                 <tr>
                     <td>@staff.FullName</td>
-                    <td>@staff.User?.Email</td>
-                    <td>@staff.PhoneNumber</td>
-                    <td>@staff.Specialization</td>
-                    <td>@(staff.Hostel?.Name ?? "Unassigned")</td>
+
                     <td>
-                        <a asp-action="Edit" asp-route-id="@staff.MaintenanceStaffId" class="btn btn-sm btn-primary">Edit</a>
+                        @(staff.User?.Email ?? "N/A")
                     </td>
+
+                    <td>
+                        @(staff.PhoneNumber ?? "N/A")
+                    </td>
+
+                    <td>
+                        @staff.Specialization
+                    </td>
+
+                    <td>
+                        @(staff.Hostel?.Name ?? "Unassigned")
+                    </td>
+
+                    @if (!Model.IsSuperAdmin)
+                    {
+                        <td>
+                            <a asp-action="Edit"
+                               asp-route-id="@staff.MaintenanceStaffId"
+                               class="btn btn-sm btn-primary">
+                                Edit
+                            </a>
+                        </td>
+                    }
                 </tr>
             }
         </tbody>

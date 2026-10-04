@@ -31,41 +31,117 @@
                             int? navScopedHostelId = await WardenContext.GetScopedHostelIdAsync(navUserId);
 
                             <li class="nav-item">
-                                <a class="nav-link text-dark" asp-controller="Admin" asp-action="Dashboard">Admin Dashboard</a>
+                                <a class="nav-link text-dark"
+                                   asp-controller="Admin"
+                                   asp-action="Dashboard">
+                                    Admin Dashboard
+                                </a>
                             </li>
+
                             @if (!navScopedHostelId.HasValue)
                             {
+                                // SUPER ADMIN NAVIGATION
+
                                 <li class="nav-item">
-                                    <a class="nav-link text-dark" asp-controller="Admin" asp-action="AllHostelsOverview">All Hostels Overview</a>
+                                    <a class="nav-link text-dark"
+                                       asp-controller="Admin"
+                                       asp-action="AllHostelsOverview">
+                                        All Hostels Overview
+                                    </a>
+                                </li>
+
+                                <li class="nav-item">
+                                    <a class="nav-link text-dark"
+                                       asp-controller="Hostels"
+                                       asp-action="Index">
+                                        Manage Hostels
+                                    </a>
+                                </li>
+
+                                <li class="nav-item">
+                                    <a class="nav-link text-dark"
+                                       asp-controller="MaintenanceStaff"
+                                       asp-action="Index">
+                                        Manage Staff
+                                    </a>
+                                </li>
+
+                                <li class="nav-item">
+                                    <a class="nav-link text-dark"
+                                       asp-controller="Feedback"
+                                       asp-action="Index">
+                                        All Feedback
+                                    </a>
+                                </li>
+
+                                <li class="nav-item">
+                                    <a class="nav-link text-dark"
+                                       asp-controller="Announcements"
+                                       asp-action="Index">
+                                        Announcements
+                                    </a>
                                 </li>
                             }
-                            <li class="nav-item">
-                                <a class="nav-link text-dark" asp-controller="Students" asp-action="Index" asp-route-search="" asp-area="">Manage Students</a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link text-dark" asp-controller="Hostels" asp-action="Index">Manage Hostels</a>
-                            </li>
-                            <li>
-                                <a class="nav-link text-dark" asp-controller="Rooms" asp-action="Index">Manage Rooms</a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link text-dark" asp-controller="RoomChangeRequests" asp-action="Index">Room Change Requests</a>
-                            </li>
-                            <li>
-                                <a class="nav-link text-dark" asp-controller="MaintenanceStaff" asp-action="Index">Manage Staff</a>
-                            </li>
-                            <li>
-                                <a class="nav-link text-dark" asp-controller="Complaints" asp-action="Index">Complaints</a>
-                            </li>
-                            <li>
-                                <a class="nav-link text-dark" asp-controller="MessMenus" asp-action="Index">Manage Mess Menus</a>
-                            </li>
-                            <li>
-                                <a class="nav-link text-dark" asp-controller="Feedback" asp-action="Index">All Feedback</a>
-                            </li>   
-                            <li>
-                                <a class="nav-link text-dark" asp-controller="Announcements" asp-action="Index">Announcements</a>
-                            </li>
+                            else
+                            {
+                                // WARDEN NAVIGATION
+
+                                <li class="nav-item">
+                                    <a class="nav-link text-dark"
+                                       asp-controller="Students"
+                                       asp-action="Index">
+                                        Manage Students
+                                    </a>
+                                </li>
+
+                                <li class="nav-item">
+                                    <a class="nav-link text-dark"
+                                       asp-controller="Rooms"
+                                       asp-action="Index">
+                                        Manage Rooms
+                                    </a>
+                                </li>
+
+                                <li class="nav-item">
+                                    <a class="nav-link text-dark"
+                                       asp-controller="RoomChangeRequests"
+                                       asp-action="Index">
+                                        Room Change Requests
+                                    </a>
+                                </li>
+
+                                <li class="nav-item">
+                                    <a class="nav-link text-dark"
+                                       asp-controller="MaintenanceStaff"
+                                       asp-action="Index">
+                                        Manage Staff
+                                    </a>
+                                </li>
+
+                                <li class="nav-item">
+                                    <a class="nav-link text-dark"
+                                       asp-controller="Complaints"
+                                       asp-action="Index">
+                                        Complaints
+                                    </a>
+                                </li>
+
+                                <li class="nav-item">
+                                    <a class="nav-link text-dark"
+                                       asp-controller="MessMenus"
+                                       asp-action="Index">
+                                        Manage Mess Menus
+                                    </a>
+                                </li>
+
+                                <li class="nav-item">
+                                    <a class="nav-link text-dark"
+                                       asp-controller="Feedback"
+                                       asp-action="Index">
+                                        All Feedback
+                                    </a>
+                                </li>
+                            }
 
                         }
                         @if (User.IsInRole("Student"))
