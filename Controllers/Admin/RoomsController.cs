@@ -211,8 +211,9 @@ namespace Hostel_hub.Controllers.Admin
                 return Forbid();
             }
 
+
             ViewBag.Room = room;
-            ViewBag.UnallocatedStudents = await _studentService.GetUnallocatedStudentsAsync();
+            ViewBag.UnallocatedStudents =await _studentService.GetUnallocatedStudentsAsync(room.HostelId);
             return View();
         }
 
@@ -227,6 +228,17 @@ namespace Hostel_hub.Controllers.Admin
             }
 
             if (!await CanManageAsync(room.HostelId))
+            {
+                return Forbid();
+            }
+            var student = await _studentService.GetStudentByIdAsync(studentId);
+
+            if (student == null)
+            {
+                return NotFound();
+            }
+
+            if (student.HostelId != room.HostelId)
             {
                 return Forbid();
             }

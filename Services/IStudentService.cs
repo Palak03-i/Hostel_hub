@@ -8,6 +8,6 @@ namespace Hostel_hub.Services
         Task<bool> UpdateProfileAsync(int userId, string fullName, string? phoneNumber);
         Task<List<Student>> GetAllStudentsAsync(string? searchTerm, int? hostelId);
         Task<Student?> GetStudentByIdAsync(int studentId);
-        Task<List<Student>> GetUnallocatedStudentsAsync();
+        Task<List<Student>> GetUnallocatedStudentsAsync(int hostelId);
     }
 }
