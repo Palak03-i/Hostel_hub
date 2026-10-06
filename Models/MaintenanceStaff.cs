@@ -1,4 +1,4 @@
-﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations;
 
 namespace Hostel_hub.Models
 {
@@ -31,5 +31,7 @@ namespace Hostel_hub.Models
 
         [Required]
         public StaffSpecialization Specialization { get; set; }
+
+        public bool IsActive { get; set; } = true;
     }
 }

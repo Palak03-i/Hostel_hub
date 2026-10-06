@@ -1,4 +1,4 @@
-﻿using Hostel_hub.Data;
+using Hostel_hub.Data;
 using Hostel_hub.Models;
 using Hostel_hub.Services;
 using Hostel_hub.ViewModels;
@@ -22,12 +22,20 @@ namespace Hostel_hub.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> AssignedComplaints()
+        public async Task<IActionResult> AssignedComplaints([FromQuery] ComplaintFilterViewModel filter)
         {
             var staffId = await GetCurrentStaffIdAsync();
-            if (staffId == null) return NotFound();
+            if (staffId == null) return Forbid();
 
-            var complaints = await _complaintService.GetAssignedComplaintsAsync(staffId.Value);
+            ViewBag.Filter = filter;
+
+            if (filter.IsDateRangeInvalid)
+            {
+                ViewBag.DateErrorMessage = "From Date cannot be later than To Date.";
+                return View(new List<Complaint>());
+            }
+
+            var complaints = await _complaintService.GetAssignedComplaintsAsync(staffId.Value, filter);
             return View(complaints);
         }
 
@@ -35,7 +43,7 @@ namespace Hostel_hub.Controllers
         public async Task<IActionResult> ComplaintDetails(int id)
         {
             var staffId = await GetCurrentStaffIdAsync();
-            if (staffId == null) return NotFound();
+            if (staffId == null) return Forbid();
 
             var complaint = await _complaintService.GetComplaintByIdAsync(id);
             if (complaint == null || complaint.AssignedStaffId != staffId.Value)
@@ -52,7 +60,7 @@ namespace Hostel_hub.Controllers
         public async Task<IActionResult> UpdateStatus(int complaintId, ComplaintStatus newStatus)
         {
             var staffId = await GetCurrentStaffIdAsync();
-            if (staffId == null) return NotFound();
+            if (staffId == null) return Forbid();
 
             var complaint = await _complaintService.GetComplaintByIdAsync(complaintId);
             if (complaint == null || complaint.AssignedStaffId != staffId.Value)
@@ -69,15 +77,19 @@ namespace Hostel_hub.Controllers
         private async Task<int?> GetCurrentStaffIdAsync()
         {
             string? userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-            int userId = int.Parse(userIdClaim!);
-            var staff = await _context.MaintenanceStaff.FirstOrDefaultAsync(s => s.UserId == userId);
+            if (string.IsNullOrEmpty(userIdClaim)) return null;
+            int userId = int.Parse(userIdClaim);
+            var staff = await _context.MaintenanceStaff.FirstOrDefaultAsync(s => s.UserId == userId && s.IsActive);
             return staff?.MaintenanceStaffId;
         }
+
         [HttpGet]
         public async Task<IActionResult> Dashboard()
         {
-            int userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)!.Value);
-            var staff = await _context.MaintenanceStaff.FirstOrDefaultAsync(s => s.UserId == userId);
+            var staffId = await GetCurrentStaffIdAsync();
+            if (staffId == null) return Forbid();
+
+            var staff = await _context.MaintenanceStaff.FirstOrDefaultAsync(s => s.MaintenanceStaffId == staffId.Value);
             if (staff == null) return NotFound();
 
             var assigned = await _complaintService.GetAssignedComplaintsAsync(staff.MaintenanceStaffId);

@@ -1,4 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using Hostel_hub.Data;
 using Hostel_hub.Models;
 
@@ -7,10 +7,12 @@ namespace Hostel_hub.Services
     public class MessMenuService : IMessMenuService
     {
         private readonly ApplicationDbContext _context;
+        private readonly ILogger<MessMenuService> _logger;
 
-        public MessMenuService(ApplicationDbContext context)
+        public MessMenuService(ApplicationDbContext context, ILogger<MessMenuService> logger)
         {
             _context = context;
+            _logger = logger;
         }
 
         public async Task<List<MessMenu>> GetMenusByHostelAsync(int? hostelId)
@@ -49,12 +51,16 @@ namespace Hostel_hub.Services
 
             if (alreadyExists)
             {
+                _logger.LogWarning("Failed to create menu: Menu for {MenuDate} already exists in Hostel {HostelId}.", menu.MenuDate, menu.HostelId);
                 return (false, $"A menu for {menu.MenuDate:d} already exists for this hostel. Edit it instead of creating a new one.");
             }
 
             menu.Items = items;
             _context.MessMenus.Add(menu);
             await _context.SaveChangesAsync();
+
+            _logger.LogInformation("Mess menu {MenuId} created for Hostel {HostelId} on {MenuDate}.", menu.MessMenuId, menu.HostelId, menu.MenuDate);
+
             return (true, null);
         }
 
@@ -66,6 +72,7 @@ namespace Hostel_hub.Services
 
             if (menu == null)
             {
+                _logger.LogWarning("Failed to update menu: Menu {MenuId} not found.", menuId);
                 return (false, "Menu not found.");
             }
 
@@ -85,6 +92,9 @@ namespace Hostel_hub.Services
             }
 
             await _context.SaveChangesAsync();
+
+            _logger.LogInformation("Mess menu {MenuId} updated.", menuId);
+
             return (true, null);
         }
 
@@ -95,6 +105,7 @@ namespace Hostel_hub.Services
 
             if (menu == null)
             {
+                _logger.LogWarning("Failed to delete menu: Menu {MenuId} not found.", menuId);
                 return (false, "Menu not found.");
             }
 
@@ -103,11 +114,15 @@ namespace Hostel_hub.Services
 
             if (hasSelections)
             {
+                _logger.LogWarning("Failed to delete menu {MenuId}: Students have active meal selections.", menuId);
                 return (false, "Cannot delete this menu — students have already made meal selections against it.");
             }
 
             _context.MessMenus.Remove(menu);
             await _context.SaveChangesAsync();
+
+            _logger.LogInformation("Mess menu {MenuId} deleted.", menuId);
+
             return (true, null);
         }
         public async Task<int> DeletePastMenusAsync()

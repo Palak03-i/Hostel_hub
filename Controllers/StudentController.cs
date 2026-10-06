@@ -1,4 +1,4 @@
-﻿using Hostel_hub.Models;
+using Hostel_hub.Models;
 using Hostel_hub.Services;
 using Hostel_hub.ViewModels;
 using Microsoft.AspNetCore.Authorization;
@@ -121,8 +121,20 @@ namespace Hostel_hub.Controllers
                 return RedirectToAction("Profile");
             }
 
-            var allRooms = await _roomService.GetRoomsByHostelAsync(null);
-            ViewBag.AvailableRooms = allRooms.Where(r => r.RoomId != student.RoomId.Value).ToList();
+            if (!student.HostelId.HasValue)
+            {
+                TempData["ErrorMessage"] =
+                    "You are not assigned to a hostel.";
+
+                return RedirectToAction("Dashboard");
+            }
+
+            var hostelRooms =
+                await _roomService.GetRoomsByHostelAsync(student.HostelId.Value);
+
+            ViewBag.AvailableRooms = hostelRooms
+                .Where(r => r.RoomId != student.RoomId.Value)
+                .ToList();
 
             return View();
         }
@@ -156,12 +168,20 @@ namespace Hostel_hub.Controllers
             return RedirectToAction("RoomChangeRequests");
         }
         [HttpGet]
-        public async Task<IActionResult> Complaints()
+        public async Task<IActionResult> Complaints([FromQuery] ComplaintFilterViewModel filter)
         {
             var student = await _studentService.GetProfileByUserIdAsync(GetCurrentUserId());
             if (student == null) return NotFound();
 
-            var complaints = await _complaintService.GetComplaintsForStudentAsync(student.StudentId);
+            ViewBag.Filter = filter;
+
+            if (filter.IsDateRangeInvalid)
+            {
+                ViewBag.DateErrorMessage = "From Date cannot be later than To Date.";
+                return View(new List<Complaint>());
+            }
+
+            var complaints = await _complaintService.GetComplaintsForStudentAsync(student.StudentId, filter);
             return View(complaints);
         }
 
@@ -201,6 +221,85 @@ namespace Hostel_hub.Controllers
 
             ViewBag.History = await _complaintService.GetHistoryAsync(id);
             return View(complaint);
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> EditComplaint(int id)
+        {
+            var student = await _studentService.GetProfileByUserIdAsync(GetCurrentUserId());
+            if (student == null) return NotFound();
+
+            var complaint = await _complaintService.GetComplaintByIdAsync(id);
+            if (complaint == null)
+            {
+                return NotFound();
+            }
+
+            if (complaint.StudentId != student.StudentId)
+            {
+                return Forbid();
+            }
+
+            if (complaint.Status != ComplaintStatus.Pending)
+            {
+                TempData["ErrorMessage"] = "Only complaints with 'Pending' status can be edited.";
+                return RedirectToAction("ComplaintDetails", new { id });
+            }
+
+            var model = new ComplaintEditViewModel
+            {
+                ComplaintId = complaint.ComplaintId,
+                Title = complaint.Title,
+                Description = complaint.Description,
+                Category = complaint.Category
+            };
+
+            return View(model);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> EditComplaint(int id, ComplaintEditViewModel model)
+        {
+            if (id != model.ComplaintId)
+            {
+                return BadRequest();
+            }
+
+            var student = await _studentService.GetProfileByUserIdAsync(GetCurrentUserId());
+            if (student == null) return NotFound();
+
+            var existingComplaint = await _complaintService.GetComplaintByIdAsync(id);
+            if (existingComplaint == null)
+            {
+                return NotFound();
+            }
+
+            if (existingComplaint.StudentId != student.StudentId)
+            {
+                return Forbid();
+            }
+
+            if (existingComplaint.Status != ComplaintStatus.Pending)
+            {
+                TempData["ErrorMessage"] = "Only complaints with 'Pending' status can be edited.";
+                return RedirectToAction("ComplaintDetails", new { id });
+            }
+
+            if (!ModelState.IsValid)
+            {
+                return View(model);
+            }
+
+            var (success, error) = await _complaintService.UpdateComplaintAsync(model.ComplaintId, student.StudentId, model.Title, model.Description, model.Category);
+            if (!success)
+            {
+                ModelState.AddModelError(string.Empty, error!);
+                return View(model);
+            }
+
+            TempData["SuccessMessage"] = "Complaint updated successfully.";
+            return RedirectToAction("ComplaintDetails", new { id = model.ComplaintId });
         }
         [HttpGet]
         public async Task<IActionResult> Mess()
@@ -458,6 +557,7 @@ namespace Hostel_hub.Controllers
 
             return View(model);
         }
+
 
     }
 }

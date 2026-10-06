@@ -1,227 +1,464 @@
-﻿@using Hostel_hub.Services
+@using Hostel_hub.Services
+@using System.Security.Claims
 @inject IWardenContext WardenContext
+
+@{
+    bool isAuthenticated =
+        User.Identity?.IsAuthenticated == true;
+
+    string currentRole =
+        User.FindFirst(ClaimTypes.Role)?.Value ?? "";
+
+    string displayRole = currentRole;
+
+    int? scopedHostelId = null;
+
+    if (isAuthenticated && currentRole == "Admin")
+    {
+        string? userIdValue =
+            User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+        if (int.TryParse(userIdValue, out int currentUserId))
+        {
+            scopedHostelId =
+                await WardenContext
+                    .GetScopedHostelIdAsync(currentUserId);
+
+            displayRole =
+                scopedHostelId.HasValue
+                    ? "Warden"
+                    : "Super Admin";
+        }
+    }
+
+    string currentController = ViewContext.RouteData.Values["Controller"]?.ToString() ?? "";
+    string currentAction = ViewContext.RouteData.Values["Action"]?.ToString() ?? "";
+}
 
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>@ViewData["Title"] - Hostel_hub</title>
-    <script type="importmap"></script>
+    <title>@ViewData["Title"] - HostelHub</title>
+
+    <!-- BOOTSTRAP -->
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+
+    <!-- GLOBAL DESIGN SYSTEM -->
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/Hostel_hub.styles.css" asp-append-version="true" />
 </head>
-<body>
-    <header>
-        <nav class="navbar navbar-expand-sm navbar-light bg-white border-bottom box-shadow mb-3">
-            <div class="container-fluid">
-                <a class="navbar-brand" asp-controller="Home" asp-action="Index">Hostel_hub</a>
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
-                    <span class="navbar-toggler-icon"></span>
-                </button>
-                <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
-                    <ul class="navbar-nav flex-grow-1">
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-controller="Home" asp-action="Index">Home</a>
-                        </li>
-                        @if (User.IsInRole("Admin"))
-                        {
-                            int navUserId = int.Parse(User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)!.Value);
-                            int? navScopedHostelId = await WardenContext.GetScopedHostelIdAsync(navUserId);
 
+<body>
+    <div class="app-wrapper">
+
+        <!-- ==============================================
+             HEADER & NAVBAR
+             ============================================== -->
+        <header>
+            <nav class="navbar navbar-expand-lg app-navbar sticky-top">
+                <div class="container-fluid">
+
+                    <!-- BRAND -->
+                    <a class="hostelhub-brand"
+                       asp-controller="Home"
+                       asp-action="Index">
+                        <div class="brand-mark">
+                            HH
+                        </div>
+                        <div class="brand-name">
+                            Hostel<span>Hub</span>
+                        </div>
+                    </a>
+
+                    <!-- MOBILE TOGGLER -->
+                    <button class="navbar-toggler"
+                            type="button"
+                            data-bs-toggle="collapse"
+                            data-bs-target="#hostelHubNavbar"
+                            aria-controls="hostelHubNavbar"
+                            aria-expanded="false"
+                            aria-label="Toggle navigation">
+                        <span class="navbar-toggler-icon"></span>
+                    </button>
+
+                    <div class="collapse navbar-collapse" id="hostelHubNavbar">
+
+                        <!-- LEFT NAVIGATION -->
+                        <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+
+                            <!-- HOME -->
                             <li class="nav-item">
-                                <a class="nav-link text-dark"
-                                   asp-controller="Admin"
-                                   asp-action="Dashboard">
-                                    Admin Dashboard
+                                <a class="nav-link @(currentController == "Home" && currentAction == "Index" ? "active" : "")"
+                                   asp-controller="Home"
+                                   asp-action="Index">
+                                    Home
                                 </a>
                             </li>
 
-                            @if (!navScopedHostelId.HasValue)
+                            <!-- ============================================
+                                 ADMIN / WARDEN
+                                 ============================================ -->
+                            @if (User.IsInRole("Admin"))
                             {
-                                // SUPER ADMIN NAVIGATION
-
+                                <!-- DASHBOARD -->
                                 <li class="nav-item">
-                                    <a class="nav-link text-dark"
+                                    <a class="nav-link @(currentController == "Admin" && currentAction == "Dashboard" ? "active" : "")"
                                        asp-controller="Admin"
-                                       asp-action="AllHostelsOverview">
-                                        All Hostels Overview
+                                       asp-action="Dashboard">
+                                        Dashboard
                                     </a>
                                 </li>
 
+                                @if (!scopedHostelId.HasValue)
+                                {
+                                    @* SUPER ADMIN NAVIGATION *@
+                                    <li class="nav-item">
+                                        <a class="nav-link @(currentController == "Hostels" ? "active" : "")"
+                                           asp-controller="Hostels"
+                                           asp-action="Index">
+                                            Hostels
+                                        </a>
+                                    </li>
+
+                                    <li class="nav-item">
+                                        <a class="nav-link @(currentController == "Students" ? "active" : "")"
+                                           asp-controller="Students"
+                                           asp-action="Index">
+                                            Students
+                                        </a>
+                                    </li>
+
+                                    <li class="nav-item">
+                                        <a class="nav-link @(currentController == "MaintenanceStaff" ? "active" : "")"
+                                           asp-controller="MaintenanceStaff"
+                                           asp-action="Index">
+                                            Staff
+                                        </a>
+                                    </li>
+
+                                    <li class="nav-item">
+                                        <a class="nav-link @(currentController == "Announcements" ? "active" : "")"
+                                           asp-controller="Announcements"
+                                           asp-action="Index">
+                                            Announcements
+                                        </a>
+                                    </li>
+
+                                    <li class="nav-item">
+                                        <a class="nav-link @(currentController == "Feedback" ? "active" : "")"
+                                           asp-controller="Feedback"
+                                           asp-action="Index">
+                                            Feedback
+                                        </a>
+                                    </li>
+                                }
+                                else
+                                {
+                                    @* WARDEN NAVIGATION *@
+                                    <!-- HOSTEL OPERATIONS -->
+                                    <li class="nav-item dropdown">
+                                        <a class="nav-link dropdown-toggle @(currentController == "Students" || currentController == "Rooms" || currentController == "RoomChangeRequests" ? "active" : "")"
+                                           href="#"
+                                           role="button"
+                                           data-bs-toggle="dropdown"
+                                           aria-expanded="false">
+                                            Hostel Operations
+                                        </a>
+                                        <ul class="dropdown-menu">
+                                            <li class="dropdown-section-label">Students &amp; Rooms</li>
+                                            <li>
+                                                <a class="dropdown-item @(currentController == "Students" ? "active" : "")"
+                                                   asp-controller="Students"
+                                                   asp-action="Index">
+                                                    Students
+                                                </a>
+                                            </li>
+                                            <li>
+                                                <a class="dropdown-item @(currentController == "Rooms" ? "active" : "")"
+                                                   asp-controller="Rooms"
+                                                   asp-action="Index">
+                                                    Rooms
+                                                </a>
+                                            </li>
+                                            <li>
+                                                <a class="dropdown-item @(currentController == "RoomChangeRequests" ? "active" : "")"
+                                                   asp-controller="RoomChangeRequests"
+                                                   asp-action="Index">
+                                                    Room Change Requests
+                                                </a>
+                                            </li>
+                                        </ul>
+                                    </li>
+
+                                    <!-- MAINTENANCE -->
+                                    <li class="nav-item dropdown">
+                                        <a class="nav-link dropdown-toggle @(currentController == "MaintenanceStaff" || currentController == "Complaints" ? "active" : "")"
+                                           href="#"
+                                           role="button"
+                                           data-bs-toggle="dropdown"
+                                           aria-expanded="false">
+                                            Maintenance
+                                        </a>
+                                        <ul class="dropdown-menu">
+                                            <li class="dropdown-section-label">Maintenance Operations</li>
+                                            <li>
+                                                <a class="dropdown-item @(currentController == "MaintenanceStaff" ? "active" : "")"
+                                                   asp-controller="MaintenanceStaff"
+                                                   asp-action="Index">
+                                                    Maintenance Staff
+                                                </a>
+                                            </li>
+                                            <li>
+                                                <a class="dropdown-item @(currentController == "Complaints" ? "active" : "")"
+                                                   asp-controller="Complaints"
+                                                   asp-action="Index">
+                                                    Complaints
+                                                </a>
+                                            </li>
+                                        </ul>
+                                    </li>
+
+                                    <!-- MESS -->
+                                    <li class="nav-item">
+                                        <a class="nav-link @(currentController == "MessMenus" ? "active" : "")"
+                                           asp-controller="MessMenus"
+                                           asp-action="Index">
+                                            Mess
+                                        </a>
+                                    </li>
+
+                                    <!-- ANNOUNCEMENTS -->
+                                    <li class="nav-item">
+                                        <a class="nav-link @(currentController == "Announcements" ? "active" : "")"
+                                           asp-controller="Announcements"
+                                           asp-action="Index">
+                                            Announcements
+                                        </a>
+                                    </li>
+
+                                    <!-- FEEDBACK -->
+                                    <li class="nav-item">
+                                        <a class="nav-link @(currentController == "Feedback" ? "active" : "")"
+                                           asp-controller="Feedback"
+                                           asp-action="Index">
+                                            Feedback
+                                        </a>
+                                    </li>
+                                }
+                            }
+
+                            <!-- ============================================
+                                 STUDENT
+                                 ============================================ -->
+                            @if (User.IsInRole("Student"))
+                            {
+                                <!-- DASHBOARD -->
                                 <li class="nav-item">
-                                    <a class="nav-link text-dark"
-                                       asp-controller="Hostels"
-                                       asp-action="Index">
-                                        Manage Hostels
+                                    <a class="nav-link @(currentController == "Student" && currentAction == "Dashboard" ? "active" : "")"
+                                       asp-controller="Student"
+                                       asp-action="Dashboard">
+                                        Dashboard
                                     </a>
                                 </li>
 
+                                <!-- MY PROFILE -->
                                 <li class="nav-item">
-                                    <a class="nav-link text-dark"
-                                       asp-controller="MaintenanceStaff"
-                                       asp-action="Index">
-                                        Manage Staff
+                                    <a class="nav-link @(currentController == "Student" && currentAction == "Profile" ? "active" : "")"
+                                       asp-controller="Student"
+                                       asp-action="Profile">
+                                        My Profile
                                     </a>
                                 </li>
 
+                                <!-- STUDENT SERVICES -->
+                                <li class="nav-item dropdown">
+                                    <a class="nav-link dropdown-toggle @(currentController == "Student" && (currentAction == "RoomChangeRequests" || currentAction == "Complaints" || currentAction == "Mess" || currentAction == "Announcements" || currentAction == "Feedback") ? "active" : "")"
+                                       href="#"
+                                       role="button"
+                                       data-bs-toggle="dropdown"
+                                       aria-expanded="false">
+                                        Services
+                                    </a>
+                                    <ul class="dropdown-menu">
+                                        <li class="dropdown-section-label">Hostel Services</li>
+                                        <li>
+                                            <a class="dropdown-item @(currentController == "Student" && currentAction == "RoomChangeRequests" ? "active" : "")"
+                                               asp-controller="Student"
+                                               asp-action="RoomChangeRequests">
+                                                Room Change Requests
+                                            </a>
+                                        </li>
+                                        <li>
+                                            <a class="dropdown-item @(currentController == "Student" && currentAction == "Complaints" ? "active" : "")"
+                                               asp-controller="Student"
+                                               asp-action="Complaints">
+                                                Complaints
+                                            </a>
+                                        </li>
+                                        <li>
+                                            <a class="dropdown-item @(currentController == "Student" && currentAction == "Mess" ? "active" : "")"
+                                               asp-controller="Student"
+                                               asp-action="Mess">
+                                                Mess Menu
+                                            </a>
+                                        </li>
+                                        <li>
+                                            <a class="dropdown-item @(currentController == "Student" && currentAction == "Announcements" ? "active" : "")"
+                                               asp-controller="Student"
+                                               asp-action="Announcements">
+                                                Announcements
+                                            </a>
+                                        </li>
+                                        <li>
+                                            <a class="dropdown-item @(currentController == "Student" && currentAction == "Feedback" ? "active" : "")"
+                                               asp-controller="Student"
+                                               asp-action="Feedback">
+                                                Feedback
+                                            </a>
+                                        </li>
+                                    </ul>
+                                </li>
+                            }
+
+                            <!-- ============================================
+                                 MAINTENANCE STAFF
+                                 ============================================ -->
+                            @if (User.IsInRole("MaintenanceStaff"))
+                            {
+                                <!-- DASHBOARD -->
                                 <li class="nav-item">
-                                    <a class="nav-link text-dark"
-                                       asp-controller="Feedback"
-                                       asp-action="Index">
-                                        All Feedback
+                                    <a class="nav-link @(currentController == "Maintenance" && currentAction == "Dashboard" ? "active" : "")"
+                                       asp-controller="Maintenance"
+                                       asp-action="Dashboard">
+                                        Dashboard
                                     </a>
                                 </li>
 
+                                <!-- MY COMPLAINTS -->
                                 <li class="nav-item">
-                                    <a class="nav-link text-dark"
-                                       asp-controller="Announcements"
-                                       asp-action="Index">
-                                        Announcements
+                                    <a class="nav-link @(currentController == "Maintenance" && currentAction == "AssignedComplaints" ? "active" : "")"
+                                       asp-controller="Maintenance"
+                                       asp-action="AssignedComplaints">
+                                        My Complaints
                                     </a>
+                                </li>
+                            }
+
+                        </ul>
+
+                        <!-- RIGHT NAVIGATION -->
+                        <ul class="navbar-nav ms-auto">
+                            @if (isAuthenticated)
+                            {
+                                <!-- USER MENU -->
+                                <li class="nav-item dropdown">
+                                    <a class="nav-link dropdown-toggle user-menu-button"
+                                       href="#"
+                                       role="button"
+                                       data-bs-toggle="dropdown"
+                                       aria-expanded="false">
+                                        <div class="user-avatar">
+                                            @(
+                                                !string.IsNullOrWhiteSpace(User.Identity?.Name)
+                                                    ? User.Identity.Name.Substring(0, 1).ToUpper()
+                                                    : "U"
+                                            )
+                                        </div>
+                                        <div class="user-info d-none d-sm-block">
+                                            <span class="user-email">@User.Identity?.Name</span>
+                                            <span class="user-role">@displayRole</span>
+                                        </div>
+                                    </a>
+
+                                    <ul class="dropdown-menu dropdown-menu-end">
+                                        <li class="dropdown-section-label">Account</li>
+                                        <li>
+                                            <div class="dropdown-item-text">
+                                                <div class="fw-semibold text-truncate" style="max-width: 220px;">
+                                                    @User.Identity?.Name
+                                                </div>
+                                                <div class="mt-1">
+                                                    <span class="role-pill">@displayRole</span>
+                                                </div>
+                                            </div>
+                                        </li>
+                                        <li>
+                                            <hr class="dropdown-divider" />
+                                        </li>
+                                        <li>
+                                            <form asp-controller="Account"
+                                                  asp-action="Logout"
+                                                  method="post">
+                                                <button type="submit" class="logout-button">
+                                                    Logout
+                                                </button>
+                                            </form>
+                                        </li>
+                                    </ul>
                                 </li>
                             }
                             else
                             {
-                                // WARDEN NAVIGATION
-
+                                <!-- LOGIN -->
                                 <li class="nav-item">
-                                    <a class="nav-link text-dark"
-                                       asp-controller="Students"
-                                       asp-action="Index">
-                                        Manage Students
+                                    <a class="nav-link login-nav-btn"
+                                       asp-controller="Account"
+                                       asp-action="Login">
+                                        Login
                                     </a>
                                 </li>
 
+                                <!-- REGISTER -->
                                 <li class="nav-item">
-                                    <a class="nav-link text-dark"
-                                       asp-controller="Rooms"
-                                       asp-action="Index">
-                                        Manage Rooms
-                                    </a>
-                                </li>
-
-                                <li class="nav-item">
-                                    <a class="nav-link text-dark"
-                                       asp-controller="RoomChangeRequests"
-                                       asp-action="Index">
-                                        Room Change Requests
-                                    </a>
-                                </li>
-
-                                <li class="nav-item">
-                                    <a class="nav-link text-dark"
-                                       asp-controller="MaintenanceStaff"
-                                       asp-action="Index">
-                                        Manage Staff
-                                    </a>
-                                </li>
-
-                                <li class="nav-item">
-                                    <a class="nav-link text-dark"
-                                       asp-controller="Complaints"
-                                       asp-action="Index">
-                                        Complaints
-                                    </a>
-                                </li>
-
-                                <li class="nav-item">
-                                    <a class="nav-link text-dark"
-                                       asp-controller="MessMenus"
-                                       asp-action="Index">
-                                        Manage Mess Menus
-                                    </a>
-                                </li>
-
-                                <li class="nav-item">
-                                    <a class="nav-link text-dark"
-                                       asp-controller="Feedback"
-                                       asp-action="Index">
-                                        All Feedback
+                                    <a class="nav-link register-nav-btn"
+                                       asp-controller="Account"
+                                       asp-action="Register">
+                                        Register
                                     </a>
                                 </li>
                             }
+                        </ul>
 
-                        }
-                        @if (User.IsInRole("Student"))
-                        {
-                            <li class="nav-item">
-                                <a class="nav-link text-dark" asp-controller="Student" asp-action="Profile">My Profile</a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link text-dark" asp-controller="Student" asp-action="RoomChangeRequests">Room Change</a>
-                            </li>
-                            <li>
-                                <a class="nav-link text-dark" asp-controller="Student" asp-action="Complaints">Complaints</a>
-                            </li>
-                             <li>
-                                <a class="nav-link text-dark" asp-controller="Student" asp-action="Mess">Mess Menu</a>
-                            </li>
-                            <li>
-                                <a class="nav-link text-dark" asp-controller="Student" asp-action="Feedback">Feedback</a>
-                            </li>
-                                                        <li>
-                                <a class="nav-link text-dark" asp-controller="Student" asp-action="Announcements">Announcements</a>
-                            </li>
-                                                        <li>
-                                <a class="nav-link text-dark" asp-controller="Student" asp-action="Dashboard">Dashboard</a>
-                            </li>
-                        }
-                        @if (User.IsInRole("MaintenanceStaff"))
-                        {
-                            <li class="nav-item">
-                                <a class="nav-link text-dark" asp-controller="Maintenance" asp-action="AssignedComplaints">My Complaints</a>
-                            </li>
-                                                        <li>
-                                <a class="nav-link text-dark" asp-controller="Maintenance" asp-action="Dashboard">Dashboard</a>
-                            </li>
-                        }
-                    </ul>
-                    <ul class="navbar-nav">
-                        @if (User.Identity != null && User.Identity.IsAuthenticated)
-                        {
-                            string roleLabel = User.FindFirst(System.Security.Claims.ClaimTypes.Role)?.Value ?? "";
-                            if (roleLabel == "Admin")
-                            {
-                                int greetingUserId = int.Parse(User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)!.Value);
-                                int? greetingScopedHostelId = await WardenContext.GetScopedHostelIdAsync(greetingUserId);
-                                roleLabel = greetingScopedHostelId.HasValue ? "Warden" : "Super Admin";
-                            }
-                            <li class="nav-item">
-                                <span class="nav-link text-dark">Hello, @User.Identity.Name (@roleLabel)</span>
-                            </li>
-                            <li class="nav-item">
-                                <form asp-controller="Account" asp-action="Logout" method="post" class="form-inline">
-                                    <button type="submit" class="btn btn-link nav-link text-dark">Logout</button>
-                                </form>
-                            </li>
-                        }
-                        else
-                        {
-                            <li class="nav-item">
-                                <a class="nav-link text-dark" asp-controller="Account" asp-action="Login">Login</a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link text-dark" asp-controller="Account" asp-action="Register">Register</a>
-                            </li>
-                        }
-                    </ul>
+                    </div>
+                </div>
+            </nav>
+        </header>
+
+        <!-- ==============================================
+             PAGE CONTENT
+             ============================================== -->
+        <main role="main" class="app-main">
+            <div class="container">
+                @RenderBody()
+            </div>
+        </main>
+
+        <!-- ==============================================
+             FOOTER
+             ============================================== -->
+        <footer class="app-footer">
+            <div class="container d-flex flex-wrap justify-content-between align-items-center gap-2">
+                <div class="d-flex align-items-center gap-2">
+                    <span class="status-dot status-dot-resolved" title="Operational"></span>
+                    <span>HostelHub &copy; @DateTime.Now.Year</span>
+                    <span class="text-muted d-none d-sm-inline">•</span>
+                    <span class="text-muted d-none d-sm-inline">Hostel Management &amp; Maintenance</span>
+                </div>
+                <div class="d-flex align-items-center gap-3">
+                    <a asp-controller="Home" asp-action="Privacy">Privacy</a>
+                    <span class="text-muted">•</span>
+                    <a asp-controller="Home" asp-action="Index">System Home</a>
                 </div>
             </div>
-        </nav>
-    </header>
-    <div class="container">
-        <main role="main" class="pb-3">
-            @RenderBody()
-        </main>
+        </footer>
+
     </div>
 
-    <footer class="border-top footer text-muted">
-        <div class="container">
-            &copy; 2026 - Hostel_hub - <a asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
-        </div>
-    </footer>
+    <!-- ==============================================
+         SCRIPTS
+         ============================================== -->
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>

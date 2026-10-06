@@ -1,4 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using Hostel_hub.Models;
 
 namespace Hostel_hub.Data
@@ -152,6 +152,10 @@ namespace Hostel_hub.Data
                 .WithMany()
                 .HasForeignKey(m => m.HostelId)
                 .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<MaintenanceStaff>()
+                .Property(m => m.IsActive)
+                .HasDefaultValue(true);
             // === Announcements ===
             modelBuilder.Entity<Announcement>()
                 .HasOne(a => a.Hostel)

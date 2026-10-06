@@ -1,4 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using Hostel_hub.Data;
 using Hostel_hub.Models;
 
@@ -7,10 +7,12 @@ namespace Hostel_hub.Services
     public class FeedbackService : IFeedbackService
     {
         private readonly ApplicationDbContext _context;
+        private readonly ILogger<FeedbackService> _logger;
 
-        public FeedbackService(ApplicationDbContext context)
+        public FeedbackService(ApplicationDbContext context, ILogger<FeedbackService> logger)
         {
             _context = context;
+            _logger = logger;
         }
 
         public async Task<List<Feedback>> GetFeedbackForStudentAsync(int studentId)
@@ -47,17 +49,20 @@ namespace Hostel_hub.Services
             {
                 if (complaintId == null)
                 {
+                    _logger.LogWarning("Failed to submit feedback: Missing complaintId for complaint feedback.");
                     return (false, "A complaint must be selected for complaint feedback.");
                 }
 
                 var complaint = await _context.Complaints.FirstOrDefaultAsync(c => c.ComplaintId == complaintId.Value);
                 if (complaint == null || complaint.StudentId != studentId)
                 {
+                    _logger.LogWarning("Failed to submit feedback: Complaint {ComplaintId} not found or mismatch for Student {StudentId}.", complaintId, studentId);
                     return (false, "Complaint not found.");
                 }
 
                 if (complaint.Status != ComplaintStatus.Resolved)
                 {
+                    _logger.LogWarning("Failed to submit feedback: Complaint {ComplaintId} is not resolved.", complaintId);
                     return (false, "Feedback can only be submitted for resolved complaints.");
                 }
 
@@ -65,6 +70,7 @@ namespace Hostel_hub.Services
                     .AnyAsync(f => f.StudentId == studentId && f.ComplaintId == complaintId.Value);
                 if (alreadySubmitted)
                 {
+                    _logger.LogWarning("Failed to submit feedback: Duplicate feedback by Student {StudentId} for Complaint {ComplaintId}.", studentId, complaintId);
                     return (false, "You have already submitted feedback for this complaint.");
                 }
             }
@@ -84,6 +90,16 @@ namespace Hostel_hub.Services
             });
 
             await _context.SaveChangesAsync();
+
+            if (source == FeedbackSource.Complaint)
+            {
+                _logger.LogInformation("Complaint feedback submitted by Student {StudentId} for Complaint {ComplaintId} with rating {Rating}.", studentId, complaintId, rating);
+            }
+            else
+            {
+                _logger.LogInformation("Feedback submitted by Student {StudentId} for source {Source} with rating {Rating}.", studentId, source, rating);
+            }
+
             return (true, null);
         }
     }

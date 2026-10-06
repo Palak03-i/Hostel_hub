@@ -1,4 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using Hostel_hub.Data;
 using Hostel_hub.Models;
 
@@ -7,10 +7,12 @@ namespace Hostel_hub.Services
     public class AnnouncementService : IAnnouncementService
     {
         private readonly ApplicationDbContext _context;
+        private readonly ILogger<AnnouncementService> _logger;
 
-        public AnnouncementService(ApplicationDbContext context)
+        public AnnouncementService(ApplicationDbContext context, ILogger<AnnouncementService> logger)
         {
             _context = context;
+            _logger = logger;
         }
 
         public async Task<List<Announcement>> GetActiveAnnouncementsAsync(int? hostelId)
@@ -52,11 +54,15 @@ namespace Hostel_hub.Services
         {
             if (announcement.ExpiryDate < announcement.PublishDate)
             {
+                _logger.LogWarning("Failed to create announcement: Expiry date before publish date.");
                 return (false, "Expiry date cannot be before the publish date.");
             }
 
             _context.Announcements.Add(announcement);
             await _context.SaveChangesAsync();
+
+            _logger.LogInformation("Announcement {AnnouncementId} created by Admin {AdminId}.", announcement.AnnouncementId, announcement.PostedByUserId);
+
             return (true, null);
         }
 
@@ -64,12 +70,14 @@ namespace Hostel_hub.Services
         {
             if (updated.ExpiryDate < updated.PublishDate)
             {
+                _logger.LogWarning("Failed to update announcement {AnnouncementId}: Expiry date before publish date.", announcementId);
                 return (false, "Expiry date cannot be before the publish date.");
             }
 
             var announcement = await _context.Announcements.FirstOrDefaultAsync(a => a.AnnouncementId == announcementId);
             if (announcement == null)
             {
+                _logger.LogWarning("Failed to update announcement: Announcement {AnnouncementId} not found.", announcementId);
                 return (false, "Announcement not found.");
             }
 
@@ -80,6 +88,9 @@ namespace Hostel_hub.Services
             announcement.IsImportant = updated.IsImportant;
 
             await _context.SaveChangesAsync();
+
+            _logger.LogInformation("Announcement {AnnouncementId} updated.", announcementId);
+
             return (true, null);
         }
 
@@ -88,11 +99,15 @@ namespace Hostel_hub.Services
             var announcement = await _context.Announcements.FirstOrDefaultAsync(a => a.AnnouncementId == announcementId);
             if (announcement == null)
             {
+                _logger.LogWarning("Failed to deactivate announcement: Announcement {AnnouncementId} not found.", announcementId);
                 return (false, "Announcement not found.");
             }
 
             announcement.IsActive = false;
             await _context.SaveChangesAsync();
+
+            _logger.LogInformation("Announcement {AnnouncementId} deactivated.", announcementId);
+
             return (true, null);
         }
     }

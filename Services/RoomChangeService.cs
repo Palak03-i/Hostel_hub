@@ -1,4 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using Hostel_hub.Data;
 using Hostel_hub.Models;
 
@@ -7,10 +7,12 @@ namespace Hostel_hub.Services
     public class RoomChangeService : IRoomChangeService
     {
         private readonly ApplicationDbContext _context;
+        private readonly ILogger<RoomChangeService> _logger;
 
-        public RoomChangeService(ApplicationDbContext context)
+        public RoomChangeService(ApplicationDbContext context, ILogger<RoomChangeService> logger)
         {
             _context = context;
+            _logger = logger;
         }
 
         public async Task<(bool Success, string? ErrorMessage)> CreateRequestAsync(int studentId, int requestedRoomId, string reason)
@@ -18,22 +20,26 @@ namespace Hostel_hub.Services
             var student = await _context.Students.FirstOrDefaultAsync(s => s.StudentId == studentId);
             if (student == null)
             {
+                _logger.LogWarning("Failed to create room change request: Student {StudentId} not found.", studentId);
                 return (false, "Student not found.");
             }
 
             if (!student.RoomId.HasValue)
             {
+                _logger.LogWarning("Failed to create room change request: Student {StudentId} has no room.", studentId);
                 return (false, "You must have an existing room before requesting a change.");
             }
 
             if (student.RoomId.Value == requestedRoomId)
             {
+                _logger.LogWarning("Failed to create room change request: Student {StudentId} requested same room {RoomId}.", studentId, requestedRoomId);
                 return (false, "You are already in this room.");
             }
 
             var requestedRoom = await _context.Rooms.FirstOrDefaultAsync(r => r.RoomId == requestedRoomId);
             if (requestedRoom == null)
             {
+                _logger.LogWarning("Failed to create room change request: Requested Room {RoomId} not found.", requestedRoomId);
                 return (false, "Requested room not found.");
             }
 
@@ -41,6 +47,7 @@ namespace Hostel_hub.Services
                 .AnyAsync(r => r.StudentId == studentId && r.Status == RoomChangeStatus.Pending);
             if (hasPendingRequest)
             {
+                _logger.LogWarning("Failed to create room change request: Student {StudentId} already has pending request.", studentId);
                 return (false, "You already have a pending room change request.");
             }
 
@@ -55,6 +62,9 @@ namespace Hostel_hub.Services
 
             _context.RoomChangeRequests.Add(request);
             await _context.SaveChangesAsync();
+
+            _logger.LogInformation("Room change request {RequestId} submitted by Student {StudentId}.", request.RoomChangeRequestId, studentId);
+
             return (true, null);
         }
 
@@ -104,11 +114,13 @@ namespace Hostel_hub.Services
 
                 if (request == null)
                 {
+                    _logger.LogWarning("Failed to approve room change: Request {RequestId} not found.", requestId);
                     return (false, "Request not found.");
                 }
 
                 if (request.Status != RoomChangeStatus.Pending)
                 {
+                    _logger.LogWarning("Failed to approve room change: Request {RequestId} status is already {Status}.", requestId, request.Status);
                     return (false, $"This request has already been {request.Status}. It cannot be approved again.");
                 }
 
@@ -118,6 +130,7 @@ namespace Hostel_hub.Services
 
                 if (student == null || oldRoom == null || newRoom == null)
                 {
+                    _logger.LogWarning("Failed to approve room change {RequestId}: Associated entity missing.", requestId);
                     return (false, "Related student or room data could not be found.");
                 }
 
@@ -125,6 +138,7 @@ namespace Hostel_hub.Services
                 // any value from when the request was originally created.
                 if (newRoom.CurrentOccupancy >= newRoom.Capacity)
                 {
+                    _logger.LogWarning("Failed to approve room change {RequestId}: Room {RoomNumber} is full.", requestId, newRoom.RoomNumber);
                     return (false, $"Cannot approve — room '{newRoom.RoomNumber}' is now full ({newRoom.CurrentOccupancy}/{newRoom.Capacity}).");
                 }
 
@@ -136,11 +150,15 @@ namespace Hostel_hub.Services
 
                 await _context.SaveChangesAsync();
                 await transaction.CommitAsync();
+
+                _logger.LogInformation("Room change request {RequestId} approved for Student {StudentId}.", requestId, request.StudentId);
+
                 return (true, null);
             }
             catch (DbUpdateConcurrencyException)
             {
                 await transaction.RollbackAsync();
+                _logger.LogWarning("Concurrency conflict while approving RoomChangeRequest {RequestId}.", requestId);
                 return (false, "One of the rooms was just modified by someone else. Please refresh and try again.");
             }
         }
@@ -150,16 +168,21 @@ namespace Hostel_hub.Services
             var request = await _context.RoomChangeRequests.FirstOrDefaultAsync(r => r.RoomChangeRequestId == requestId);
             if (request == null)
             {
+                _logger.LogWarning("Failed to reject room change: Request {RequestId} not found.", requestId);
                 return (false, "Request not found.");
             }
 
             if (request.Status != RoomChangeStatus.Pending)
             {
+                _logger.LogWarning("Failed to reject room change: Request {RequestId} status is already {Status}.", requestId, request.Status);
                 return (false, $"This request has already been {request.Status}.");
             }
 
             request.Status = RoomChangeStatus.Rejected;
             await _context.SaveChangesAsync();
+
+            _logger.LogInformation("Room change request {RequestId} rejected for Student {StudentId}.", requestId, request.StudentId);
+
             return (true, null);
         }
     }

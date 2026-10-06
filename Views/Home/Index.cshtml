@@ -1,8 +1,308 @@
-﻿@{
-    ViewData["Title"] = "Home Page";
+@{
+    ViewData["Title"] = "Hostel Management & Maintenance";
 }
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
-</div>
+<style>
+    .home-hero {
+        padding: 50px 0 60px;
+    }
+
+    .hero-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        background: var(--hh-primary-subtle);
+        color: var(--hh-primary);
+        border: 1px solid var(--hh-primary-border);
+        padding: 6px 14px;
+        border-radius: var(--hh-radius-full);
+        font-weight: 600;
+        font-size: 0.82rem;
+        letter-spacing: 0.02em;
+        margin-bottom: 20px;
+    }
+
+    .hero-title {
+        font-size: 2.85rem;
+        font-weight: 800;
+        line-height: 1.15;
+        color: var(--hh-text-primary);
+        letter-spacing: -0.035em;
+        margin-bottom: 18px;
+    }
+
+    .hero-title span {
+        color: var(--hh-primary);
+    }
+
+    .hero-description {
+        color: var(--hh-text-muted);
+        font-size: 1.05rem;
+        line-height: 1.65;
+        max-width: 580px;
+        margin-bottom: 28px;
+    }
+
+    .hero-visual {
+        background: linear-gradient(145deg, #1e40af, #2563eb);
+        border-radius: var(--hh-radius-xl);
+        padding: 32px;
+        color: white;
+        box-shadow: var(--hh-shadow-xl);
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        border: 1px solid rgba(255, 255, 255, 0.15);
+    }
+
+    .hero-visual-title {
+        font-size: 1.25rem;
+        font-weight: 700;
+        margin-bottom: 20px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .dashboard-preview-card {
+        background: rgba(255, 255, 255, 0.12);
+        backdrop-filter: blur(8px);
+        -webkit-backdrop-filter: blur(8px);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        border-radius: var(--hh-radius-md);
+        padding: 16px;
+        margin-bottom: 14px;
+        transition: transform var(--hh-transition-fast), background-color var(--hh-transition-fast);
+    }
+
+    .dashboard-preview-card:hover {
+        background: rgba(255, 255, 255, 0.18);
+        transform: translateY(-2px);
+    }
+
+    .preview-number {
+        font-size: 1.4rem;
+        font-weight: 750;
+        margin-bottom: 2px;
+        letter-spacing: -0.02em;
+    }
+
+    .preview-label {
+        color: rgba(255, 255, 255, 0.85);
+        margin-bottom: 0;
+        font-size: 0.82rem;
+        font-weight: 500;
+    }
+
+    .features-section {
+        padding: 40px 0 60px;
+        border-top: 1px solid var(--hh-border);
+    }
+
+    .section-heading {
+        text-align: center;
+        margin-bottom: 35px;
+    }
+
+    .section-heading h2 {
+        font-weight: 750;
+        font-size: 1.75rem;
+        color: var(--hh-text-primary);
+        letter-spacing: -0.025em;
+    }
+
+    .section-heading p {
+        color: var(--hh-text-muted);
+        max-width: 600px;
+        margin: 8px auto 0;
+        font-size: 0.95rem;
+    }
+
+    .feature-card {
+        background: var(--hh-surface);
+        border: 1px solid var(--hh-border);
+        border-radius: var(--hh-radius-lg);
+        padding: 24px;
+        height: 100%;
+        box-shadow: var(--hh-shadow-xs);
+        transition: transform var(--hh-transition-fast), box-shadow var(--hh-transition-fast), border-color var(--hh-transition-fast);
+    }
+
+    .feature-card:hover {
+        transform: translateY(-3px);
+        box-shadow: var(--hh-shadow-md);
+        border-color: var(--hh-border-strong);
+    }
+
+    .feature-icon-badge {
+        width: 44px;
+        height: 44px;
+        border-radius: var(--hh-radius-md);
+        background: var(--hh-primary-subtle);
+        color: var(--hh-primary);
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 700;
+        font-size: 0.92rem;
+        border: 1px solid var(--hh-primary-border);
+        margin-bottom: 16px;
+    }
+
+    .feature-card h5 {
+        font-weight: 700;
+        font-size: 1.05rem;
+        color: var(--hh-text-primary);
+        margin-bottom: 8px;
+    }
+
+    .feature-card p {
+        color: var(--hh-text-muted);
+        margin-bottom: 0;
+        line-height: 1.55;
+        font-size: 0.88rem;
+    }
+
+    @@media (max-width: 991px) {
+        .hero-title {
+            font-size: 2.25rem;
+        }
+        .hero-visual {
+            margin-top: 35px;
+        }
+    }
+</style>
+
+<section class="home-hero">
+    <div class="row align-items-center">
+
+        <!-- LEFT HERO -->
+        <div class="col-lg-7">
+            <span class="hero-badge">
+                <span class="status-dot status-dot-assigned"></span>
+                Centralized Hostel Operations
+            </span>
+
+            <h1 class="hero-title">
+                Manage your hostel <span>smarter, faster, and easier.</span>
+            </h1>
+
+            <p class="hero-description">
+                HostelHub unites hostel administration, wardens, students, and maintenance personnel into a single, intuitive platform for room allocations, complaints, mess management, and everyday operations.
+            </p>
+
+            <div class="d-flex flex-wrap gap-2 pt-1">
+                <a asp-controller="Account"
+                   asp-action="Login"
+                   class="btn btn-primary btn-lg">
+                    Sign In to Portal
+                </a>
+
+                <a asp-controller="Account"
+                   asp-action="Register"
+                   class="btn btn-outline-primary btn-lg">
+                    Student Registration
+                </a>
+            </div>
+        </div>
+
+        <!-- RIGHT VISUAL -->
+        <div class="col-lg-5">
+            <div class="hero-visual">
+                <div class="hero-visual-title">
+                    <span>HostelHub Core Modules</span>
+                </div>
+
+                <div class="row g-3">
+                    <div class="col-6">
+                        <div class="dashboard-preview-card">
+                            <p class="preview-number">01</p>
+                            <p class="preview-label">Hostels &amp; Rooms</p>
+                        </div>
+                    </div>
+
+                    <div class="col-6">
+                        <div class="dashboard-preview-card">
+                            <p class="preview-number">02</p>
+                            <p class="preview-label">Room Allocation</p>
+                        </div>
+                    </div>
+
+                    <div class="col-6">
+                        <div class="dashboard-preview-card">
+                            <p class="preview-number">03</p>
+                            <p class="preview-label">Maintenance Tracking</p>
+                        </div>
+                    </div>
+
+                    <div class="col-6">
+                        <div class="dashboard-preview-card">
+                            <p class="preview-number">04</p>
+                            <p class="preview-label">Mess &amp; Meal Ops</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</section>
+
+<section class="features-section">
+    <div class="section-heading">
+        <h2>Designed for modern campus residence operations</h2>
+        <p>
+            Tailored workflows for administrators, wardens, students, and maintenance staff with role-based access control.
+        </p>
+    </div>
+
+    <div class="row g-4">
+        <div class="col-md-6 col-lg-3">
+            <div class="feature-card">
+                <div class="feature-icon-badge">
+                    RM
+                </div>
+                <h5>Rooms &amp; Capacity</h5>
+                <p>
+                    Full room inventory management, occupancy tracking, automated capacity limits, and seamless student transfers.
+                </p>
+            </div>
+        </div>
+
+        <div class="col-md-6 col-lg-3">
+            <div class="feature-card">
+                <div class="feature-icon-badge">
+                    CM
+                </div>
+                <h5>Complaints Workflow</h5>
+                <p>
+                    Log, assign, prioritize, and track maintenance complaints with transparent status lifecycles from creation to resolution.
+                </p>
+            </div>
+        </div>
+
+        <div class="col-md-6 col-lg-3">
+            <div class="feature-card">
+                <div class="feature-icon-badge">
+                    MM
+                </div>
+                <h5>Mess Management</h5>
+                <p>
+                    Publish daily meal menus, monitor meal participation counts, and respect student meal take/skip preferences.
+                </p>
+            </div>
+        </div>
+
+        <div class="col-md-6 col-lg-3">
+            <div class="feature-card">
+                <div class="feature-icon-badge">
+                    RB
+                </div>
+                <h5>Role-Based Security</h5>
+                <p>
+                    Secure cookie authentication, role-based views and actions, ensuring students, staff, and admins access only their authorized domains.
+                </p>
+            </div>
+        </div>
+    </div>
+</section>

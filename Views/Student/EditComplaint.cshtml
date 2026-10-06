@@ -1,7 +1,7 @@
-﻿@model Hostel_hub.ViewModels.ComplaintCreateViewModel
+@model Hostel_hub.ViewModels.ComplaintEditViewModel
 
 @{
-    ViewData["Title"] = "Raise Complaint";
+    ViewData["Title"] = "Edit Complaint";
 }
 
 <style>
@@ -147,56 +147,41 @@
     }
 </style>
 
-
 <div class="complaint-form-page">
 
     <!-- PAGE HEADER -->
     <div class="complaint-form-header">
-
-        <h2>Raise a Complaint</h2>
-
-        <p>
-            Report a hostel or maintenance issue to the administration.
-        </p>
-
+        <h2>Edit Complaint</h2>
+        <p>Update your complaint details before it is assigned for maintenance.</p>
     </div>
-
 
     <div class="complaint-form-card">
 
-
         <!-- CARD HEADER -->
         <div class="complaint-form-card-header">
-
             <h5>Complaint Details</h5>
-
-            <p>
-                Provide clear information so the issue can be resolved quickly.
-            </p>
-
+            <p>Modify the information below. Only pending complaints can be updated.</p>
         </div>
-
 
         <!-- FORM BODY -->
         <div class="complaint-form-body">
 
             <div class="complaint-info-box">
-                Please provide an accurate title, description and category.
-                Your complaint status can be tracked from the My Complaints page.
+                You can edit your complaint's title, category, and description as long as its status is Pending. Once assigned to maintenance staff, complaints cannot be edited.
             </div>
 
-
-            <form asp-action="CreateComplaint"
+            <form asp-action="EditComplaint"
+                  asp-route-id="@Model.ComplaintId"
                   method="post">
 
-                <div asp-validation-summary="ModelOnly"
-                     class="text-danger">
-                </div>
+                <input type="hidden" asp-for="ComplaintId" />
 
+                <div asp-validation-summary="ModelOnly"
+                     class="text-danger mb-3">
+                </div>
 
                 <!-- TITLE -->
                 <div class="form-section">
-
                     <label asp-for="Title"
                            class="form-label-custom">
                         Complaint Title
@@ -207,19 +192,16 @@
                            placeholder="Example: Water leakage in bathroom" />
 
                     <div class="form-help">
-                        Enter a short title that clearly describes the issue.
+                        Enter a short title that clearly describes the issue (maximum 150 characters).
                     </div>
 
                     <span asp-validation-for="Title"
                           class="text-danger small">
                     </span>
-
                 </div>
-
 
                 <!-- CATEGORY -->
                 <div class="form-section">
-
                     <label asp-for="Category"
                            class="form-label-custom">
                         Complaint Category
@@ -228,19 +210,18 @@
                     <select asp-for="Category"
                             asp-items="Html.GetEnumSelectList<Hostel_hub.Models.ComplaintCategory>()"
                             class="form-select complaint-input">
-
                         <option value="">
                             Select complaint category
                         </option>
-
                     </select>
 
+                    <span asp-validation-for="Category"
+                          class="text-danger small">
+                    </span>
                 </div>
-
 
                 <!-- DESCRIPTION -->
                 <div class="form-section">
-
                     <label asp-for="Description"
                            class="form-label-custom">
                         Description
@@ -248,37 +229,29 @@
 
                     <textarea asp-for="Description"
                               class="form-control complaint-textarea"
-                              placeholder="Describe the issue in detail...">
-                    </textarea>
+                              placeholder="Describe the issue in detail..."></textarea>
 
                     <div class="form-help">
-                        Mention the exact issue and any useful details for maintenance staff.
+                        Mention the exact issue and any useful details for maintenance staff (maximum 1000 characters).
                     </div>
 
                     <span asp-validation-for="Description"
                           class="text-danger small">
                     </span>
-
                 </div>
-
 
                 <!-- ACTIONS -->
                 <div class="form-actions">
-
-                    <a asp-action="Complaints"
+                    <a asp-action="ComplaintDetails"
+                       asp-route-id="@Model.ComplaintId"
                        class="btn btn-outline-secondary">
-
                         Cancel
-
                     </a>
 
                     <button type="submit"
                             class="btn btn-primary">
-
-                        Submit Complaint
-
+                        Save Changes
                     </button>
-
                 </div>
 
             </form>

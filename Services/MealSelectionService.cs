@@ -1,4 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using Hostel_hub.Data;
 using Hostel_hub.Models;
 using Hostel_hub.ViewModels;
@@ -9,11 +9,13 @@ namespace Hostel_hub.Services
     {
         private readonly ApplicationDbContext _context;
         private readonly IConfiguration _configuration;
+        private readonly ILogger<MealSelectionService> _logger;
 
-        public MealSelectionService(ApplicationDbContext context, IConfiguration configuration)
+        public MealSelectionService(ApplicationDbContext context, IConfiguration configuration, ILogger<MealSelectionService> logger)
         {
             _context = context;
             _configuration = configuration;
+            _logger = logger;
         }
 
         public async Task<List<MealSelection>> GetSelectionsForStudentAsync(int studentId, int menuId)
@@ -28,17 +30,20 @@ namespace Hostel_hub.Services
             var student = await _context.Students.FirstOrDefaultAsync(s => s.StudentId == studentId);
             if (student == null)
             {
+                _logger.LogWarning("Meal selection failed: Student {StudentId} not found.", studentId);
                 return (false, "Student not found.");
             }
 
             var menu = await _context.MessMenus.FirstOrDefaultAsync(m => m.MessMenuId == menuId);
             if (menu == null)
             {
+                _logger.LogWarning("Meal selection failed: Menu {MenuId} not found.", menuId);
                 return (false, "Menu not found.");
             }
 
             if (student.HostelId != menu.HostelId)
             {
+                _logger.LogWarning("Meal selection failed: Student {StudentId} belongs to Hostel {StudentHostelId}, but Menu {MenuId} is for Hostel {MenuHostelId}.", studentId, student.HostelId, menuId, menu.HostelId);
                 return (false, "You can only select meals from your own hostel's menu.");
             }
 
@@ -52,11 +57,13 @@ namespace Hostel_hub.Services
 
             if (!mealIsAvailable)
             {
+                _logger.LogWarning("Meal selection failed: MealType {MealType} is unavailable for Menu {MenuId}.", mealType, menuId);
                 return (false, $"{mealType} is not available for {menu.MenuDate:d}.");
             }
 
             if (!IsMealSelectionWithinCutoff(menu.MenuDate,mealType,out var cutoffDateTime))
             {
+                _logger.LogWarning("Meal selection failed: Cutoff passed for MealType {MealType} on Menu {MenuId}.", mealType, menuId);
                 return (false, $"Selection for {mealType} on {menu.MenuDate:d} closed at {cutoffDateTime:g}.");
             }
 
@@ -80,6 +87,9 @@ namespace Hostel_hub.Services
             }
 
             await _context.SaveChangesAsync();
+
+            _logger.LogInformation("Meal selection updated: Student {StudentId}, Menu {MenuId}, MealType {MealType}, Status {Status}.", studentId, menuId, mealType, status);
+
             return (true, null);
         }
 
