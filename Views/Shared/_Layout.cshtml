@@ -36,8 +36,11 @@
 }
 
 <!DOCTYPE html>
+
 <html lang="en">
+
 <head>
+
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>@ViewData["Title"] - HostelHub</title>
@@ -95,6 +98,7 @@
                                    asp-action="Index">
                                     Home
                                 </a>
+
                             </li>
 
                             <!-- ============================================
@@ -261,6 +265,7 @@
                                        asp-action="Dashboard">
                                         Dashboard
                                     </a>
+
                                 </li>
 
                                 <!-- MY PROFILE -->
@@ -408,6 +413,7 @@
                                        asp-action="Login">
                                         Login
                                     </a>
+
                                 </li>
 
                                 <!-- REGISTER -->
@@ -417,7 +423,179 @@
                                        asp-action="Register">
                                         Register
                                     </a>
+
                                 </li>
+
+                            }
+
+                            else
+                            {
+                                @* ======================================
+                                   WARDEN NAVIGATION
+                                   ====================================== *@
+
+
+                                <!-- HOSTEL OPERATIONS -->
+
+                                <li class="nav-item dropdown">
+
+                                    <a class="nav-link dropdown-toggle"
+                                       href="#"
+                                       role="button"
+                                       data-bs-toggle="dropdown"
+                                       aria-expanded="false">
+
+                                        Hostel Operations
+
+                                    </a>
+
+
+                                    <ul class="dropdown-menu">
+
+                                        <li class="dropdown-section-label">
+                                            Students & Rooms
+                                        </li>
+
+
+                                        <li>
+
+                                            <a class="dropdown-item"
+                                               asp-controller="Students"
+                                               asp-action="Index">
+
+                                                Students
+
+                                            </a>
+
+                                        </li>
+
+
+                                        <li>
+
+                                            <a class="dropdown-item"
+                                               asp-controller="Rooms"
+                                               asp-action="Index">
+
+                                                Rooms
+
+                                            </a>
+
+                                        </li>
+
+
+                                        <li>
+
+                                            <a class="dropdown-item"
+                                               asp-controller="RoomChangeRequests"
+                                               asp-action="Index">
+
+                                                Room Change Requests
+
+                                            </a>
+
+                                        </li>
+
+                                    </ul>
+
+                                </li>
+
+
+                                <!-- MAINTENANCE -->
+
+                                <li class="nav-item dropdown">
+
+                                    <a class="nav-link dropdown-toggle"
+                                       href="#"
+                                       role="button"
+                                       data-bs-toggle="dropdown"
+                                       aria-expanded="false">
+
+                                        Maintenance
+
+                                    </a>
+
+
+                                    <ul class="dropdown-menu">
+
+                                        <li class="dropdown-section-label">
+                                            Maintenance Operations
+                                        </li>
+
+
+                                        <li>
+
+                                            <a class="dropdown-item"
+                                               asp-controller="MaintenanceStaff"
+                                               asp-action="Index">
+
+                                                Maintenance Staff
+
+                                            </a>
+
+                                        </li>
+
+
+                                        <li>
+
+                                            <a class="dropdown-item"
+                                               asp-controller="Complaints"
+                                               asp-action="Index">
+
+                                                Complaints
+
+                                            </a>
+
+                                        </li>
+
+                                    </ul>
+
+                                </li>
+
+
+                                <!-- MESS -->
+
+                                <li class="nav-item">
+
+                                    <a class="nav-link"
+                                       asp-controller="MessMenus"
+                                       asp-action="Index">
+
+                                        Mess
+
+                                    </a>
+
+                                </li>
+
+
+                                <!-- ANNOUNCEMENTS -->
+
+                                <li class="nav-item">
+
+                                    <a class="nav-link"
+                                       asp-controller="Announcements"
+                                       asp-action="Index">
+
+                                        Announcements
+
+                                    </a>
+
+                                </li>
+
+
+                                <!-- FEEDBACK -->
+
+                                <li class="nav-item">
+
+                                    <a class="nav-link"
+                                       asp-controller="Feedback"
+                                       asp-action="Index">
+
+                                        Feedback
+
+                                    </a>
+
+                                </li>
+
                             }
                         </ul>
 
@@ -451,6 +629,7 @@
                     <span class="text-muted">•</span>
                     <a asp-controller="Home" asp-action="Index">System Home</a>
                 </div>
+
             </div>
         </footer>
 
@@ -460,8 +639,16 @@
          SCRIPTS
          ============================================== -->
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
+
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="~/js/site.js" asp-append-version="true"></script>
-    @await RenderSectionAsync("Scripts", required: false)
+
+    <script src="~/js/site.js"
+            asp-append-version="true"></script>
+
+    @await RenderSectionAsync(
+        "Scripts",
+        required: false
+    )
+
 </body>
 </html>
